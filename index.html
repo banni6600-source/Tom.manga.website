@@ -1,12 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Site</title>
+  <title>Manga Website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: #0d0d0d;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    header {
+      background: #111;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .chapter-list a {
+      display: block;
+      padding: 10px;
+      margin: 10px;
+      background: #222;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .chapter-list a:hover {
+      background: #444;
+    }
+
+    .reader {
+      display: none;
+    }
+
+    .reader img {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .nav {
+      margin: 15px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      background: #ff4444;
+      color: white;
+      font-size: 14px;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>Hello 😎</h1>
-<p>My first website</p>
+<header>📖 My Manga Website</header>
+
+<!-- HOME -->
+<div id="home">
+  <h2>Chapters</h2>
+  <div class="chapter-list">
+    <a onclick="openChapter(1)">Chapter 1</a>
+    <a onclick="openChapter(2)">Chapter 2</a>
+  </div>
+</div>
+
+<!-- READER -->
+<div id="reader" class="reader">
+
+  <div class="nav">
+    <button onclick="prevChapter()">⬅ Prev</button>
+    <button onclick="goHome()">🏠 Home</button>
+    <button onclick="nextChapter()">Next ➡</button>
+  </div>
+
+  <div id="images"></div>
+
+</div>
+
+<script>
+  let current = 1;
+
+  function openChapter(num) {
+    current = num;
+    document.getElementById("home").style.display = "none";
+    document.getElementById("reader").style.display = "block";
+    loadImages();
+  }
+
+  function goHome() {
+    document.getElementById("home").style.display = "block";
+    document.getElementById("reader").style.display = "none";
+  }
+
+  function nextChapter() {
+    current++;
+    loadImages();
+  }
+
+  function prevChapter() {
+    if(current > 1){
+      current--;
+      loadImages();
+    }
+  }
+
+  function loadImages() {
+    let container = document.getElementById("images");
+    container.innerHTML = "";
+
+    // Chapter images (edit here)
+    let data = {
+      1: ["1.jpg", "2.jpg"],
+      2: ["3.jpg", "4.jpg"]
+    };
+
+    let imgs = data[current];
+
+    if(!imgs){
+      container.innerHTML = "<p>No chapter</p>";
+      return;
+    }
+
+    imgs.forEach(src => {
+      let img = document.createElement("img");
+      img.src = src;
+      container.appendChild(img);
+    });
+  }
+</script>
 
 </body>
 </html>
