@@ -1,173 +1,266 @@
 <!DOCTYPE html>
-<html>
+<html lang="my">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{background:#0b0b0b;color:white;font-family:sans-serif;text-align:center}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Manga Hub</title>
+    <style>
+        :root {
+            --primary: #ff4d4d; --secondary: #7000ff; --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
+        }
 
-#loginBtn{position:fixed;top:10px;right:10px;background:red;color:white;border:none;padding:8px}
-#loginBox{display:none;position:fixed;top:50px;right:10px;background:#111;padding:15px;border-radius:10px}
+        body {
+            background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0;
+            background-image: radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
 
-.chapter{background:#1a1a1a;margin:15px;padding:15px;border-radius:10px}
-button{margin:5px;padding:8px 12px;border:none;border-radius:6px;background:#e11d48;color:white}
+        /* --- Header & Search --- */
+        .header {
+            position: fixed; top: 0; width: 100%; height: 65px;
+            background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(15px);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000; border-bottom: 1px solid var(--border);
+        }
+        .logo { margin-left: 20px; font-weight: 800; color: var(--primary); font-size: 22px; }
+        
+        .search-area { padding: 80px 20px 10px; max-width: 600px; margin: auto; }
+        .search-bar {
+            width: 100%; padding: 12px 20px; border-radius: 25px;
+            background: var(--glass); border: 1px solid var(--border);
+            color: white; outline: none; box-sizing: border-box;
+        }
 
-#adminPanel{display:none;background:#111;padding:15px;margin:15px}
-</style>
+        /* --- Manga Grid --- */
+        .manga-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px; padding: 20px; max-width: 900px; margin: auto;
+        }
+        .manga-card {
+            background: var(--glass); border-radius: 15px; overflow: hidden;
+            border: 1px solid var(--border); transition: 0.3s; cursor: pointer;
+        }
+        .manga-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .manga-card img { width: 100%; height: 200px; object-fit: cover; }
+        .manga-card h4 { margin: 10px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- Detail Page --- */
+        #detailPage {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 2000; overflow-y: auto; padding-bottom: 50px;
+        }
+        .hero { width: 100%; height: 300px; object-fit: cover; filter: brightness(0.4); }
+        .detail-content { padding: 20px; margin-top: -100px; position: relative; max-width: 700px; margin-left: auto; margin-right: auto; }
+        .summary-box { background: rgba(20,20,20,0.8); padding: 20px; border-radius: 20px; border: 1px solid var(--border); line-height: 1.6; color: #ccc; }
+
+        /* --- Subscription Box --- */
+        .sub-card {
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            border: 1px solid gold; padding: 20px; border-radius: 20px;
+            margin: 20px 0; text-align: center; box-shadow: 0 0 20px rgba(255,215,0,0.1);
+        }
+
+        /* --- Chapter List --- */
+        .chapter-item {
+            background: var(--glass); padding: 15px; border-radius: 12px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid var(--border);
+        }
+        .btn-read { background: var(--primary); border: none; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-vip { background: gold; color: black; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
+
+        /* --- Admin Panel --- */
+        .admin-panel { display: none; background: #111; padding: 20px; border-radius: 15px; margin: 20px; border: 1px solid var(--secondary); text-align: left; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #333; color: white; border-radius: 10px; box-sizing: border-box; }
+        
+        /* --- Menu Dropdown --- */
+        .dropdown {
+            display: none; position: fixed; right: 15px; top: 70px;
+            background: rgba(15,15,15,0.95); backdrop-filter: blur(20px);
+            min-width: 250px; border-radius: 20px; padding: 20px;
+            border: 1px solid var(--border); z-index: 1001;
+        }
+        .dropdown.active { display: block; }
+    </style>
 </head>
-
 <body>
 
-<button id="loginBtn">Login</button>
-
-<div id="loginBox">
-<input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Password"><br><br>
-<button id="reg">Register</button>
-<button id="log">Login</button>
+<div class="header">
+    <div class="logo">TOM MANGA</div>
+    <div style="margin-right:20px; cursor:pointer; font-size:24px;" onclick="toggleMenu()">⋮</div>
 </div>
 
-<h2 id="coin">Coins: 0</h2>
-
-<h2>📖 Chapters</h2>
-
-<div class="chapter">
-<h3>Chapter 1 (Free)</h3>
-<button onclick="openChapter(1)">Read</button>
+<div id="homePage">
+    <div class="search-area">
+        <input type="text" class="search-bar" placeholder="Search manga titles..." id="searchBox" onkeyup="searchManga()">
+    </div>
+    <div class="manga-grid" id="mangaContainer">
+        </div>
 </div>
 
-<div class="chapter">
-<h3>Chapter 2 (5 coin)</h3>
-<button onclick="unlock(2,5)">Unlock & Read</button>
+<div id="myDropdown" class="dropdown">
+    <b id="userEmail">Guest</b><br>
+    <small id="userID" style="color:gray; cursor:pointer" onclick="copyUID()">ID: Click to copy</small>
+    <hr style="border:0.1px solid #333; margin:15px 0">
+    <div style="font-size: 20px;">💰 Coins: <span id="coinStatus" style="color:gold">0</span></div>
+    <div id="vipStatus" style="color:cyan; font-size:12px; margin-top:5px"></div>
+    <br>
+    <button onclick="showLogin()" id="authBtn" style="width:100%; padding:10px; border-radius:10px; background:var(--primary); color:white; border:none;">Login / Register</button>
 </div>
 
-<div class="chapter">
-<h3>VIP Chapter 🔒</h3>
-<button onclick="vipOnly()">VIP Only</button>
-</div>
-
-<!-- ADMIN -->
-<div id="adminPanel">
-<h2>🛠 Admin Panel</h2>
-<input id="targetUID" placeholder="User UID"><br><br>
-<input id="newCoin" placeholder="Set Coin"><br><br>
-<button onclick="setCoin()">Set Coin</button>
-<button onclick="giveVIP()">Give VIP</button>
+<div id="detailPage">
+    <button onclick="closeDetail()" style="position:fixed; top:20px; left:20px; z-index:2100; background:rgba(0,0,0,0.5); border:none; color:white; padding:10px 15px; border-radius:10px; backdrop-filter:blur(5px);">⬅ Back</button>
+    <div id="detailContent">
+        </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
- apiKey:"AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k",
- authDomain:"tommangasite.firebaseapp.com",
- projectId:"tommangasite"
-};
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k", 
+        authDomain: "tommangasite.firebaseapp.com", 
+        projectId: "tommangasite" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore();
+    const auth = getAuth();
+    const ADMIN_EMAIL = "yourname@email.com"; // သင့် Admin Email ပြောင်းရန်
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore();
+    let userData = null;
 
-let currentUser=null;
+    // --- ၁။ Auth & User Data ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("userEmail").innerText = user.email;
+            document.getElementById("userID").innerText = "ID: " + user.uid;
+            onSnapshot(doc(db, "users", user.uid), (d) => {
+                userData = d.data();
+                userData.uid = user.uid;
+                document.getElementById("coinStatus").innerText = userData.coin;
+                
+                const today = new Date();
+                const expireDate = userData.subExpires ? new Date(userData.subExpires.seconds * 1000) : null;
+                if(expireDate && expireDate > today) {
+                    document.getElementById("vipStatus").innerText = "⭐ Premium Member (Active)";
+                } else {
+                    document.getElementById("vipStatus").innerText = "";
+                }
+            });
+        }
+    });
 
-// ADMIN EMAIL (change this)
-const adminEmail="your@email.com";
+    // --- ၂။ Home Page (Manga List) ---
+    onSnapshot(collection(db, "mangas"), (snap) => {
+        const container = document.getElementById("mangaContainer");
+        container.innerHTML = "";
+        snap.forEach(doc => {
+            const m = doc.data();
+            container.innerHTML += `
+                <div class="manga-card" onclick="openManga('${doc.id}')">
+                    <img src="${m.thumb}">
+                    <h4>${m.title}</h4>
+                </div>
+            `;
+        });
+    });
 
-// LOGIN BOX
-loginBtn.onclick=()=>loginBox.style.display=
-loginBox.style.display=="block"?"none":"block";
+    // --- ၃။ Open Manga & Detail Page ---
+    window.openManga = async (id) => {
+        const d = await getDoc(doc(db, "mangas", id));
+        const m = d.data();
+        document.getElementById("detailPage").style.display = "block";
+        document.getElementById("detailContent").innerHTML = `
+            <img src="${m.thumb}" class="hero">
+            <div class="detail-content">
+                <h1>${m.title}</h1>
+                <div class="summary-box"><b>Summary:</b><br>${m.desc}</div>
+                
+                <div class="sub-card">
+                    <h3 style="color:gold; margin:0">💎 Monthly VIP Access</h3>
+                    <p style="font-size:13px; opacity:0.8">၅၀၀ Coins ထဲနဲ့ တစ်လစာ အကုန်ဖတ်မယ်</p>
+                    <button onclick="buySub()" style="background:gold; color:black; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">Buy Subscription</button>
+                </div>
 
-// REGISTER
-reg.onclick=async ()=>{
- let u=await createUserWithEmailAndPassword(auth,email.value,password.value);
+                <h3 style="margin-top:30px">Chapters</h3>
+                <div id="chapterList">Loading...</div>
+            </div>
+        `;
+        loadChapters(id);
+    };
 
- await setDoc(doc(db,"users",u.user.uid),{
-  coin:100,
-  vip:false,
-  unlocked:[]
- });
+    // --- ၄။ Chapter Logic (Coin vs Sub) ---
+    async function loadChapters(mId) {
+        onSnapshot(query(collection(db, "mangas", mId, "chapters"), orderBy("createdAt", "asc")), (snap) => {
+            const list = document.getElementById("chapterList");
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const c = doc.data();
+                const cId = doc.id;
+                
+                // VIP Only အခန်းလား စစ်မယ်
+                const btnLabel = c.isVipOnly ? "VIP 🔒" : (c.price > 0 ? `💰 ${c.price}` : "Free");
+                const btnClass = c.isVipOnly ? "btn-vip" : "btn-read";
 
- alert("Account created");
-};
+                list.innerHTML += `
+                    <div class="chapter-item">
+                        <span>${c.title}</span>
+                        <button class="${btnClass}" onclick="readChapter('${mId}', '${cId}', ${c.price}, ${c.isVipOnly})">${btnLabel}</button>
+                    </div>
+                `;
+            });
+        });
+    }
 
-// LOGIN
-log.onclick=async ()=>{
- let u=await signInWithEmailAndPassword(auth,email.value,password.value);
- currentUser=u.user;
+    window.readChapter = async (mId, cId, price, isVipOnly) => {
+        if(!userData) return alert("Login First");
 
- loadUser();
+        const today = new Date();
+        const expireDate = userData.subExpires ? new Date(userData.subExpires.seconds * 1000) : null;
+        const isSubActive = expireDate && expireDate > today;
 
- if(u.user.email===adminEmail){
-  adminPanel.style.display="block";
- }
-};
+        // Logic 1: လချုပ် (Sub) ရှိရင် အကုန်ဖတ်
+        if(isSubActive) return alert("Opening Chapter... (VIP Active)");
 
-// LOAD COIN
-async function loadUser(){
- let d=await getDoc(doc(db,"users",currentUser.uid));
- coin.innerText="Coins: "+d.data().coin;
-}
+        // Logic 2: Sub မရှိဘဲ VIP အခန်းဖတ်ချင်ရင် တားမယ်
+        if(isVipOnly) return alert("ဤအခန်းသည် VIP သမားများသာ ဖတ်နိုင်ပါသည်။ လစဉ်ကြေးအရင်ဝယ်ပါ။");
 
-// OPEN CHAPTER
-window.openChapter=function(id){
- alert("Opening Chapter "+id+" 📖");
-};
+        // Logic 3: ဝယ်ပြီးသားလား စစ်မယ်
+        if(userData.unlocked?.includes(cId)) return alert("Opening Chapter...");
 
-// UNLOCK
-window.unlock=async function(id,price){
- if(!currentUser){alert("Login first");return;}
+        // Logic 4: Coin နဲ့ ဝယ်မယ်
+        if(price > 0) {
+            if(userData.coin < price) return alert("Coin မလောက်ပါ");
+            if(confirm(`${price} Coins သုံးမှာလား?`)) {
+                await updateDoc(doc(db, "users", userData.uid), {
+                    coin: userData.coin - price,
+                    unlocked: [...(userData.unlocked || []), cId]
+                });
+                alert("Unlocked!");
+            }
+        } else {
+            alert("Opening Free Chapter...");
+        }
+    };
 
- let ref=doc(db,"users",currentUser.uid);
- let d=await getDoc(ref);
- let data=d.data();
+    // --- ၅။ Subscription ဝယ်ခြင်း ---
+    window.buySub = async () => {
+        if(userData.coin < 500) return alert("Coin မလောက်ပါ (၅၀၀ လိုအပ်သည်)");
+        const exp = new Date();
+        exp.setDate(exp.getDate() + 30);
+        await updateDoc(doc(db, "users", userData.uid), {
+            coin: userData.coin - 500,
+            subExpires: exp
+        });
+        alert("Monthly VIP ဝယ်ယူမှု အောင်မြင်ပါပြီ! 🎉");
+    };
 
- if(data.unlocked.includes(id)){
-  openChapter(id);
-  return;
- }
-
- if(data.coin<price){
-  alert("Not enough coin ❌");
-  return;
- }
-
- await updateDoc(ref,{
-  coin:data.coin-price,
-  unlocked:[...data.unlocked,id]
- });
-
- loadUser();
- openChapter(id);
-};
-
-// VIP
-window.vipOnly=async function(){
- let d=await getDoc(doc(db,"users",currentUser.uid));
- if(!d.data().vip){
-  alert("VIP only 🔒");
-  return;
- }
- openChapter("VIP");
-};
-
-// ADMIN
-window.setCoin=async function(){
- await updateDoc(doc(db,"users",targetUID.value),{
-  coin:parseInt(newCoin.value)
- });
- alert("Coin updated");
-};
-
-window.giveVIP=async function(){
- await updateDoc(doc(db,"users",targetUID.value),{
-  vip:true
- });
- alert("VIP granted");
-};
+    // UI Helper
+    window.toggleMenu = () => document.getElementById("myDropdown").classList.toggle("active");
+    window.closeDetail = () => document.getElementById("detailPage").style.display = "none";
 </script>
-
 </body>
 </html>
