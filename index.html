@@ -1,137 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manga App</title>
+  <title>Tom Manga</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body {
-      margin: 0;
-      background: #0f0f0f;
+      background: #0f172a;
       color: white;
       font-family: Arial;
-    }
-
-    header {
-      background: #111;
-      padding: 15px;
       text-align: center;
-      font-size: 20px;
-      font-weight: bold;
+      padding: 20px;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    input {
       padding: 10px;
-    }
-
-    .card {
-      background: #1c1c1c;
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    .card p {
-      padding: 8px;
-      margin: 0;
-      text-align: center;
-    }
-
-    .reader {
-      display: none;
-      text-align: center;
-    }
-
-    .reader img {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .nav {
-      position: sticky;
-      top: 0;
-      background: #000;
-      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      border: none;
     }
 
     button {
-      padding: 8px 12px;
+      padding: 10px 20px;
       margin: 5px;
-      background: red;
       border: none;
+      border-radius: 8px;
+      background: #22c55e;
       color: white;
-      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .box {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
     }
   </style>
 </head>
 
 <body>
 
-<header>📖 Sunday Style Manga</header>
+<h1>🔥 Tom Manga Site</h1>
 
-<!-- HOME -->
-<div id="home">
+<div class="box">
+  <h2>Login / Register</h2>
 
-  <div class="grid">
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
 
-    <div class="card" onclick="openManga(1)">
-      <img src="cover1.jpg">
-      <p>Manga 1</p>
-    </div>
-
-    <div class="card" onclick="openManga(2)">
-      <img src="cover2.jpg">
-      <p>Manga 2</p>
-    </div>
-
-  </div>
-
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
 </div>
 
-<!-- READER -->
-<div id="reader" class="reader">
-
-  <div class="nav">
-    <button onclick="goHome()">🏠 Home</button>
-  </div>
-
-  <div id="images"></div>
-
+<div class="box">
+  <h2>Your Coin</h2>
+  <p id="coin">0</p>
 </div>
 
-<script>
-function openManga(id){
-  document.getElementById("home").style.display = "none";
-  document.getElementById("reader").style.display = "block";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } 
+  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  let data = {
-    1: ["1.jpg","2.jpg"],
-    2: ["3.jpg","4.jpg"]
+  const firebaseConfig = {
+    apiKey: "AIzaSyCoGazgNsEEK70iMVWzUyWRSZJWZxAZ_g8",
+    authDomain: "mang-9c8b4.firebaseapp.com",
+    projectId: "mang-9c8b4",
+    storageBucket: "mang-9c8b4.firebasestorage.app",
+    messagingSenderId: "297477458680",
+    appId: "1:297477458680:web:5d39779fc2f4081c33890d",
+    measurementId: "G-X7WVDVZRQ3"
   };
 
-  let container = document.getElementById("images");
-  container.innerHTML = "";
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const db = getFirestore();
 
-  data[id].forEach(src=>{
-    let img = document.createElement("img");
-    img.src = src;
-    container.appendChild(img);
-  });
-}
+  // Register
+  window.register = async function () {
+    let email = document.getElementById("email").value;
+    let pass = document.getElementById("password").value;
 
-function goHome(){
-  document.getElementById("home").style.display = "block";
-  document.getElementById("reader").style.display = "none";
-}
+    const user = await createUserWithEmailAndPassword(auth, email, pass);
+
+    await setDoc(doc(db, "users", user.user.uid), {
+      coin: 100
+    });
+
+    alert("Account Created!");
+  }
+
+  // Login
+  window.login = async function () {
+    let email = document.getElementById("email").value;
+    let pass = document.getElementById("password").value;
+
+    const user = await signInWithEmailAndPassword(auth, email, pass);
+
+    const data = await getDoc(doc(db, "users", user.user.uid));
+
+    document.getElementById("coin").innerText = data.data().coin;
+  }
 </script>
 
 </body>
