@@ -1,99 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Tom Manga</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: #0f172a;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-      padding: 20px;
-    }
-
-    input {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 8px;
-      border: none;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin: 5px;
-      border: none;
-      border-radius: 8px;
-      background: #22c55e;
-      color: white;
-      font-weight: bold;
-    }
-
-    .box {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 15px;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-
-<body>
-
-<h1>🔥 Tom Manga Site</h1>
-
-<div class="box">
-  <h2>Login / Register</h2>
-
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Password"><br>
-
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-</div>
-
-<div class="box">
-  <h2>Your Coin</h2>
-  <p id="coin">0</p>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } 
-  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCoGazgNsEEK70iMVWzUyWRSZJWZxAZ_g8",
-    authDomain: "mang-9c8b4.firebaseapp.com",
-    projectId: "mang-9c8b4",
-    storageBucket: "mang-9c8b4.firebasestorage.app",
-    messagingSenderId: "297477458680",
-    appId: "1:297477458680:web:5d39779fc2f4081c33890d",
-    measurementId: "G-X7WVDVZRQ3"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getFirestore();
-
-  // Register
-  window.register = async function () {
-    let email = document.getElementById("email").value;
-    let pass = document.getElementById("password").value;
-
-    const user = await createUserWithEmailAndPassword(auth, email, pass);
-
-    await setDoc(doc(db, "users", user.user.uid), {
-      coin: 100
-    });
-
-    alert("Account Created!");
-  }
-
-  // Login
-  window.login = async function () {
+window.login = async function () {
+  try {
     let email = document.getElementById("email").value;
     let pass = document.getElementById("password").value;
 
@@ -102,8 +8,11 @@
     const data = await getDoc(doc(db, "users", user.user.uid));
 
     document.getElementById("coin").innerText = data.data().coin;
-  }
-</script>
+    document.getElementById("coinBox").style.display = "block";
 
-</body>
-</html>
+    alert("Login success 😎");
+
+  } catch (e) {
+    alert(e.message); // 👉 error ပြမယ်
+  }
+}
