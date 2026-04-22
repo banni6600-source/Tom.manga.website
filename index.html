@@ -3,154 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TOM MANGA | Professional Edition</title>
+    <title>TOM MANGA | Professional System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        html { scroll-behavior: smooth; }
-        body { 
-            background: #0a0a0c; 
-            color: #eee; 
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            margin: 0;
-        }
-
-        /* 5. Live Background Effect 🔥 */
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(255,45,85,0.08), transparent),
-                        radial-gradient(circle at 80% 70%, rgba(255,45,85,0.05), transparent);
-            animation: moveBg 10s linear infinite alternate;
-            z-index: -1;
-        }
-        @keyframes moveBg {
-            from { transform: translateY(0px); }
-            to { transform: translateY(-50px); }
-        }
-
-        /* 2. Page Animation */
-        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Glass UI & Glows */
-        .glass { background: rgba(10, 10, 12, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo-glow { text-shadow: 0 0 15px rgba(255,45,85,0.6); }
-        .btn-glow { box-shadow: 0 0 15px rgba(255,45,85,0.4); transition: 0.3s; }
-        .btn-glow:hover { box-shadow: 0 0 25px rgba(255,45,85,0.7); filter: brightness(1.2); }
-
-        /* Manga Card Netflix Style */
-        .manga-card { 
-            background: rgba(17,17,20,0.7); 
-            backdrop-filter: blur(10px);
-            border-radius: 20px; 
-            overflow: hidden; 
-            border: 1px solid rgba(255,255,255,0.03); 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .manga-card:hover { 
-            transform: translateY(-8px) scale(1.02); 
-            border-color: #ff2d55; 
-            box-shadow: 0 20px 40px rgba(255,45,85,0.2); 
-        }
-
-        /* Reader Mode Upgrade */
-        .reader-img { 
-            width: 100%; 
-            max-width: 900px; 
-            margin: 15px auto; 
-            display: block; 
-            border-radius: 12px;
-            transition: 0.3s;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-        }
-        .reader-img:hover { transform: scale(1.01); }
-
-        .form-input { 
-            background: rgba(255,255,255,0.03); 
-            border: 1px solid rgba(255,255,255,0.08); 
-            border-radius: 14px; 
-            padding: 14px; 
-            width: 100%; 
-            color: #fff; 
-            outline: none;
-            transition: 0.3s;
-        }
-        .form-input:focus { border-color: #ff2d55; background: rgba(255,255,255,0.06); }
-        .text-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #71717a; }
+        body { background: #0a0a0c; color: #eee; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(17,17,20,0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        .form-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; width: 100%; color: #fff; outline: none; transition: 0.3s; }
+        .form-input:focus { border-color: #ff2d55; }
+        .btn-red { background: #ff2d55; color: white; font-weight: 800; border-radius: 12px; padding: 12px; transition: 0.3s; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        .btn-red:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        .card-shadow { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
 
-<div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] opacity-0 transition-all pointer-events-none">
-    <div class="glass px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/10 flex items-center gap-3">
-        <span id="toastIcon"></span><p id="toastMsg"></p>
-    </div>
-</div>
-
-<nav class="glass fixed top-0 w-full h-20 flex items-center justify-between px-8 z-[100]">
-    <h1 class="text-2xl font-900 italic tracking-tighter text-red-500 logo-glow">TOM MANGA</h1>
-    <div class="flex items-center gap-5">
-        <div id="userCoin" class="text-yellow-500 font-900 text-sm italic">💰 0</div>
-        <button onclick="document.getElementById('userDropdown').classList.toggle('hidden')" class="w-10 h-10 bg-white/5 rounded-full border border-white/10 flex items-center justify-center text-lg">⋮</button>
-        
-        <div id="userDropdown" class="hidden absolute right-8 top-20 w-72 glass border border-white/10 rounded-3xl p-5 shadow-2xl">
-            <div id="adminPanel" class="hidden border-b border-white/5 pb-4 mb-4 space-y-3">
-                <p class="text-label">Admin Control</p>
-                <button onclick="toggleMangaForm()" class="w-full text-left text-xs font-bold uppercase opacity-60 hover:opacity-100 transition-all">Post New Manga</button>
-                <input id="targetUid" placeholder="User ID" class="form-input text-[10px] py-2">
-                <div class="flex gap-2">
-                    <button onclick="updateUserCoin()" class="flex-1 py-2 bg-yellow-600/20 text-yellow-500 rounded-lg text-[10px] font-bold">+ COIN</button>
-                    <button onclick="addMonthlyVIP()" class="flex-1 py-2 bg-purple-600/20 text-purple-500 rounded-lg text-[10px] font-bold">+ VIP</button>
-                </div>
-            </div>
-            <button onclick="auth.signOut().then(()=>location.reload())" class="w-full text-left p-2 text-red-500 text-xs font-black uppercase tracking-widest">🚪 Logout</button>
-        </div>
+<nav class="glass fixed top-0 w-full h-20 flex items-center justify-between px-6 z-[100]">
+    <h1 class="text-xl font-900 italic tracking-tighter text-red-500">TOM MANGA</h1>
+    <div class="flex items-center gap-4">
+        <div id="userCoin" class="text-yellow-500 font-900 text-sm italic bg-yellow-500/10 px-3 py-1 rounded-full">💰 0</div>
+        <button onclick="toggleModal('profileModal')" class="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center border border-zinc-700">👤</button>
     </div>
 </nav>
 
-<main class="mt-28 px-4 max-w-6xl mx-auto space-y-10">
-    <div id="mangaForm" class="hidden glass p-8 rounded-[40px] border border-white/5 space-y-6 fade-in">
-        <div class="grid md:grid-cols-2 gap-4">
-            <input id="mTitle" placeholder="Manga Title" class="form-input">
-            <input type="file" id="mThumbFile" class="form-input text-xs pt-3">
+<div id="profileModal" class="fixed inset-0 bg-black/90 z-[1000] hidden flex items-center justify-center p-4 backdrop-blur-md">
+    <div class="glass w-full max-w-sm p-8 rounded-[32px] space-y-6 card-shadow">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-900 italic text-red-500">USER PROFILE</h2>
+            <button onclick="toggleModal('profileModal')" class="text-zinc-500 hover:text-white">✕</button>
         </div>
-        <textarea id="mDesc" placeholder="Summary..." class="form-input h-24"></textarea>
-        <button onclick="uploadMangaWithImage()" id="publishBtn" class="w-full btn-glow bg-red-600 py-4 rounded-2xl font-black uppercase text-xs text-white">Publish Manga</button>
+        
+        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+            <p class="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-1">Your Unique ID (Tap to Copy)</p>
+            <p id="myUid" onclick="copyText(this.innerText)" class="text-xs font-mono text-zinc-300 cursor-pointer hover:text-red-400 break-all bg-black/30 p-2 rounded">---</p>
+            <div id="myRole" class="mt-3 text-[9px] bg-red-500/20 text-red-400 w-fit px-2 py-0.5 rounded font-black tracking-widest uppercase">Member</div>
+        </div>
+
+        <div class="space-y-3">
+            <p class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Coin Transfer</p>
+            <input id="targetId" placeholder="Receiver's User ID" class="form-input text-xs">
+            <input id="transferAmt" type="number" placeholder="Amount to Send" class="form-input text-xs">
+            <button onclick="transferCoin()" class="w-full btn-red">Transfer Now</button>
+        </div>
+        <button onclick="auth.signOut().then(()=>location.reload())" class="w-full text-zinc-600 text-[10px] font-black uppercase tracking-widest hover:text-red-500">Logout</button>
+    </div>
+</div>
+
+<main class="mt-28 px-4 max-w-4xl mx-auto space-y-12">
+    
+    <div id="adminArea" class="hidden glass p-8 rounded-[40px] border-red-500/20 border-2 space-y-8">
+        <div>
+            <h3 class="text-red-500 font-900 italic mb-6 tracking-widest uppercase text-sm border-b border-red-500/10 pb-2">Admin Control Panel</h3>
+            
+            <div class="space-y-3 mb-10">
+                <p class="text-[10px] font-black text-zinc-500 tracking-widest uppercase">1. Post New Manga</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input id="mTitle" placeholder="Manga Title" class="form-input text-xs">
+                    <input type="file" id="mThumb" class="form-input text-xs pt-2">
+                </div>
+                <textarea id="mDesc" placeholder="Brief Summary..." class="form-input text-xs h-20"></textarea>
+                <button onclick="uploadManga()" id="mBtn" class="btn-red w-full">Publish Manga</button>
+            </div>
+
+            <div class="space-y-3 pt-6 border-t border-white/5">
+                <p class="text-[10px] font-black text-zinc-500 tracking-widest uppercase">2. Add Chapter to Manga</p>
+                <input id="targetMangaId" placeholder="Manga ID (Get from Library)" class="form-input text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <input id="cTitle" placeholder="Chapter (e.g. Ep-01)" class="form-input text-xs">
+                    <input id="cPrice" type="number" placeholder="Price (0 = Free)" class="form-input text-xs">
+                </div>
+                <input type="file" id="cPages" multiple class="form-input text-xs pt-2">
+                <button onclick="uploadChapter()" id="cBtn" class="btn-red w-full">Add Chapter</button>
+            </div>
+        </div>
     </div>
 
-    <div id="mGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6"></div>
+    <div id="mGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"></div>
 </main>
-
-<div id="mDetail" class="fixed inset-0 bg-[#0a0a0c]/95 z-[500] hidden overflow-y-auto backdrop-blur-md">
-    <button onclick="closeDetail()" class="fixed top-6 left-6 z-[600] w-12 h-12 glass rounded-full flex items-center justify-center border border-white/10 font-bold hover:bg-red-600 transition-all">✕</button>
-    <div id="detailContent" class="max-w-4xl mx-auto p-6 pt-24 pb-20 fade-in"></div>
-</div>
-
-<div id="reader" class="fixed inset-0 bg-black z-[1100] hidden overflow-y-auto">
-    <button onclick="closeReader()" class="fixed top-6 left-6 z-[1200] px-6 py-3 glass rounded-full text-xs font-bold border border-white/10 uppercase tracking-widest">Exit Reader</button>
-    <div id="rImages" class="pt-20"></div>
-</div>
-
-<div id="authModal" class="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center hidden p-6">
-    <div class="w-full max-w-sm glass p-10 rounded-[40px] border border-white/10 text-center">
-        <h2 id="authTitle" class="text-3xl font-900 mb-8 italic uppercase tracking-tighter text-red-500 logo-glow">LOGIN</h2>
-        <input id="uName" placeholder="Username" class="form-input mb-4 text-center">
-        <input id="password" type="password" placeholder="Password" class="form-input mb-8 text-center">
-        <button onclick="handleAuth()" class="w-full btn-glow bg-red-600 py-5 rounded-2xl font-black uppercase text-xs">Confirm</button>
-        <p onclick="isReg = !isReg; document.getElementById('authTitle').innerText = isReg ? 'REGISTER' : 'LOGIN'" class="mt-8 text-zinc-500 text-[10px] cursor-pointer font-black uppercase tracking-widest hover:text-zinc-300">Toggle Register/Login</p>
-    </div>
-</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, setDoc, getDoc, getDocs, serverTimestamp, updateDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, increment, runTransaction, collection, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k",
@@ -164,180 +98,101 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const imgbbKey = "မင်းရဲ့_IMGBB_KEY_ဒီမှာထည့်"; 
+    const imgbbKey = "မင်းရဲ့_IMGBB_KEY_ဒီမှာထည့်";
 
-    let userData = null; let isReg = false;
-
-    // Monitor Auth
     onAuthStateChanged(auth, user => {
         if(user) {
+            document.getElementById("myUid").innerText = user.uid;
             onSnapshot(doc(db, "users", user.uid), d => {
-                userData = d.data();
-                if(userData) {
-                    document.getElementById("userCoin").innerText = "💰 " + (userData.coin || 0);
-                    if(userData.role === 'owner') document.getElementById("adminPanel").classList.remove("hidden");
-                }
+                const data = d.data() || {};
+                document.getElementById("userCoin").innerText = "💰 " + (data.coin || 0);
+                document.getElementById("myRole").innerText = data.role || "Member";
+                if(data.role === 'owner') document.getElementById("adminArea").classList.remove("hidden");
             });
-            document.getElementById("authModal").classList.add("hidden");
-        } else {
-            document.getElementById("authModal").classList.remove("hidden");
         }
     });
 
-    // ImgBB Upload
+    // --- Core Logic ---
+
+    window.copyText = (text) => {
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    };
+
+    window.toggleModal = (id) => document.getElementById(id).classList.toggle("hidden");
+
+    window.transferCoin = async () => {
+        const target = document.getElementById("targetId").value.trim();
+        const amt = parseInt(document.getElementById("transferAmt").value);
+        if(!target || isNaN(amt) || amt <= 0) return alert("Please check ID or Amount");
+
+        try {
+            await runTransaction(db, async (t) => {
+                const meRef = doc(db, "users", auth.currentUser.uid);
+                const toRef = doc(db, "users", target);
+                const meDoc = await t.get(meRef);
+                if (meDoc.data().coin < amt) throw "Insufficient Coins!";
+                t.update(meRef, { coin: increment(-amt) });
+                t.update(toRef, { coin: increment(amt) });
+            });
+            alert("Transfer Successful! ✅");
+            toggleModal('profileModal');
+        } catch (e) { alert(e); }
+    };
+
     async function uploadToImgBB(file) {
         let f = new FormData(); f.append("image", file);
         const r = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: "POST", body: f });
         const d = await r.json(); return d.data.url;
     }
 
-    // Library Stream
-    onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc")), snap => {
-        const g = document.getElementById("mGrid"); g.innerHTML = "";
-        snap.forEach(d => {
-            const m = d.data();
-            g.innerHTML += `
-                <div onclick="viewDetail('${d.id}')" class="manga-card group cursor-pointer fade-in">
-                    <div class="relative overflow-hidden aspect-[3/4]">
-                        <img src="${m.thumbnail}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                        <p class="absolute bottom-3 left-3 right-3 text-[11px] font-black uppercase tracking-widest text-white drop-shadow-lg">
-                            ${m.title}
-                        </p>
-                    </div>
-                </div>`;
-        });
-    });
-
-    // View Detail
-    window.viewDetail = async id => {
-        const m = (await getDoc(doc(db, "manga", id))).data();
-        document.getElementById("mDetail").classList.remove("hidden");
-        const isAdmin = userData?.role === 'owner';
+    window.uploadManga = async () => {
+        const title = document.getElementById("mTitle").value;
+        const file = document.getElementById("mThumb").files[0];
+        if(!title || !file) return alert("Title and Thumbnail required!");
         
-        document.getElementById("detailContent").innerHTML = `
-            <div class="relative">
-                ${isAdmin ? `<button onclick="document.getElementById('chapForm').classList.toggle('hidden')" class="absolute -top-10 right-0 bg-red-600 w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-all z-[520]">✏️</button>` : ''}
-                
-                <div class="flex flex-col sm:flex-row gap-10 mb-12 items-center sm:items-start">
-                    <img src="${m.thumbnail}" class="w-52 aspect-[3/4] object-cover rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
-                    <div class="pt-4 text-center sm:text-left">
-                        <h2 class="text-4xl font-900 uppercase italic tracking-tighter mb-4 text-white">${m.title}</h2>
-                        <p class="text-zinc-500 text-sm leading-relaxed max-w-md italic">${m.description || 'No summary available.'}</p>
-                    </div>
-                </div>
-
-                <div id="chapForm" class="hidden glass p-8 rounded-[32px] border border-white/5 mb-12 space-y-4">
-                    <p class="text-label text-red-500">Admin: Add New Episode</p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <input id="cTitle" placeholder="Ep Title" class="form-input">
-                        <input id="cPrice" type="number" placeholder="Coin Price" class="form-input">
-                    </div>
-                    <input type="file" id="cPageFiles" multiple class="form-input text-xs pt-3">
-                    <button onclick="saveNewChapter('${id}')" id="chapBtn" class="w-full btn-glow bg-red-600 py-4 rounded-xl text-xs font-black uppercase">Publish Episode</button>
-                </div>
-
-                <h3 class="text-label mb-6 px-1 tracking-[0.2em]">Episodes List</h3>
-                <div id="chapList" class="grid gap-3"></div>
-            </div>`;
-        loadChapters(id);
-    };
-
-    window.loadChapters = async (mId) => {
-        const snap = await getDocs(query(collection(db, "manga", mId, "chapters"), orderBy("createdAt", "desc")));
-        const l = document.getElementById("chapList"); l.innerHTML = "";
-        snap.forEach(d => {
-            const c = d.data();
-            l.innerHTML += `
-                <div onclick="unlockChapter('${mId}', '${d.id}', ${c.price})" class="bg-[#16161a]/60 p-5 rounded-2xl flex justify-between items-center border border-zinc-800 hover:border-red-500/50 hover:bg-[#1c1c22] transition-all cursor-pointer group">
-                    <span class="text-xs font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-all">${c.title}</span>
-                    <span class="text-[10px] font-black ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'} bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">
-                        ${c.price > 0 ? '💰 ' + c.price : 'FREE'}
-                    </span>
-                </div>`;
-        });
-    };
-
-    window.unlockChapter = async (mId, cId, price) => {
-        const isVIP = userData.role === 'vip' || userData.role === 'owner';
-        if(price === 0 || isVIP || (userData.unlockedChapters && userData.unlockedChapters[cId])) return openReader(mId, cId);
-        if(userData.coin < price) return notify("Coin မလောက်ပါ", "❌");
-        if(confirm(`Unlock Episode for ${price} coins?`)) {
-            await runTransaction(db, async t => {
-                const uRef = doc(db, "users", auth.currentUser.uid);
-                const fresh = (await t.get(uRef)).data();
-                const current = fresh.unlockedChapters || {};
-                current[cId] = true;
-                t.update(uRef, { coin: fresh.coin - price, unlockedChapters: current });
-            });
-            openReader(mId, cId);
-        }
-    };
-
-    window.openReader = async (mId, cId) => {
-        const c = (await getDoc(doc(db, "manga", mId, "chapters", cId))).data();
-        document.getElementById("rImages").innerHTML = c.pages.map(u => `<img src="${u}" class="reader-img" loading="lazy">`).join('');
-        document.getElementById("reader").classList.remove("hidden");
-    };
-
-    // UI & Logic
-    window.notify = (m, i="✅") => { const t = document.getElementById("toast"); document.getElementById("toastMsg").innerText = m; document.getElementById("toastIcon").innerText = i; t.classList.remove("opacity-0", "-translate-y-10"); setTimeout(() => t.classList.add("opacity-0", "-translate-y-10"), 3000); };
-    window.closeDetail = () => document.getElementById("mDetail").classList.add("hidden");
-    window.closeReader = () => { document.getElementById("reader").classList.add("hidden"); window.scrollTo(0,0); };
-    window.toggleMangaForm = () => document.getElementById("mangaForm").classList.toggle("hidden");
-    
-    window.handleAuth = async () => {
-        const u = document.getElementById("uName").value.trim().toLowerCase();
-        const p = document.getElementById("password").value;
-        try {
-            if(isReg) {
-                const r = await createUserWithEmailAndPassword(auth, `${u}@tommanga.com`, p);
-                await setDoc(doc(db, "users", r.user.uid), { username: u, coin: 0, role: "member", unlockedChapters: {} });
-            } else { await signInWithEmailAndPassword(auth, `${u}@tommanga.com`, p); }
-            location.reload();
-        } catch(e) { notify("Error", "❌"); }
-    };
-
-    window.uploadMangaWithImage = async () => {
-        const file = document.getElementById("mThumbFile").files[0];
-        if(!file || !document.getElementById("mTitle").value) return notify("ဖြည့်စွက်ပါ", "⚠️");
-        document.getElementById("publishBtn").innerText = "Uploading Manga...";
+        document.getElementById("mBtn").innerText = "Uploading...";
         const url = await uploadToImgBB(file);
-        await addDoc(collection(db, "manga"), { 
-            title: document.getElementById("mTitle").value, 
-            thumbnail: url, 
-            description: document.getElementById("mDesc").value, 
-            createdAt: serverTimestamp() 
+        await addDoc(collection(db, "manga"), {
+            title, thumbnail: url, description: document.getElementById("mDesc").value, createdAt: serverTimestamp()
         });
         location.reload();
     };
 
-    window.saveNewChapter = async id => {
-        const f = document.getElementById("cPageFiles").files;
-        if(f.length === 0) return notify("ပုံရွေးပါ", "⚠️");
-        document.getElementById("chapBtn").innerText = "Uploading Episode...";
+    window.uploadChapter = async () => {
+        const mId = document.getElementById("targetMangaId").value.trim();
+        const files = document.getElementById("cPages").files;
+        if(!mId || files.length === 0) return alert("Manga ID and Pages required!");
+
+        document.getElementById("cBtn").innerText = "Processing Pages...";
         const urls = [];
-        for(let x of f) { urls.push(await uploadToImgBB(x)); }
-        await addDoc(collection(db, "manga", id, "chapters"), {
+        for(let f of files) { urls.push(await uploadToImgBB(f)); }
+        
+        await addDoc(collection(db, "manga", mId, "chapters"), {
             title: document.getElementById("cTitle").value,
             price: parseInt(document.getElementById("cPrice").value) || 0,
             pages: urls,
             createdAt: serverTimestamp()
         });
-        viewDetail(id);
+        alert("Chapter Added Successfully! 🚀");
+        location.reload();
     };
 
-    window.updateUserCoin = async () => {
-        const uid = document.getElementById("targetUid").value.trim();
-        const amt = parseInt(prompt("Set Coin Amount:"));
-        if(uid && !isNaN(amt)) { await updateDoc(doc(db, "users", uid), { coin: amt }); notify("Coin Updated!"); }
-    };
-
-    window.addMonthlyVIP = async () => {
-        const uid = document.getElementById("targetUid").value.trim();
-        const exp = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
-        if(uid) { await updateDoc(doc(db, "users", uid), { role: "vip", vipExpiry: exp }); notify("VIP Activated!"); }
-    };
+    // Library Grid Logic
+    onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc")), snap => {
+        const g = document.getElementById("mGrid"); g.innerHTML = "";
+        snap.forEach(d => {
+            const m = d.data();
+            g.innerHTML += `
+                <div class="glass rounded-2xl overflow-hidden group cursor-pointer" onclick="copyText('${d.id}')">
+                    <img src="${m.thumbnail}" class="w-full aspect-[3/4] object-cover">
+                    <div class="p-3">
+                        <p class="text-[10px] font-black uppercase truncate">${m.title}</p>
+                        <p class="text-[8px] text-zinc-500 mt-1 font-mono">ID: ${d.id}</p>
+                    </div>
+                </div>`;
+        });
+    });
 </script>
 </body>
 </html>
