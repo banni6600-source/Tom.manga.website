@@ -3,441 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TOM MANGA | Owner Dashboard</title>
+    <title>TOM MANGA | Pro Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #ff2d55; }
         body { background: #08080c; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
         .glass { background: rgba(8, 8, 12, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .manga-card { background: rgba(255,255,255,0.02); border-radius: 24px; transition: 0.4s; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        .manga-card:hover { transform: translateY(-8px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(255, 45, 85, 0.2); }
-        .reader-img { width: 100%; max-width: 850px; margin: 0 auto; display: block; opacity: 0; transition: opacity 0.8s; }
-        .btn-premium { background: linear-gradient(135deg, #ff2d55 0%, #b3002d 100%); }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        .manga-card { background: rgba(255,255,255,0.02); border-radius: 24px; transition: 0.4s; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .manga-card:hover { transform: translateY(-8px); border-color: var(--accent); }
+        .status-badge { position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; font-size: 8px; font-weight: 900; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; z-index: 10; }
+        .reader-img { width: 100%; max-width: 100%; margin: 0 auto; display: block; opacity: 0; transition: opacity 0.5s; image-rendering: -webkit-optimize-contrast; }
+        .animate-fade { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .select-none { -webkit-user-select: none; user-select: none; }
+        .form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px 16px; width: 100%; outline: none; transition: 0.3s; }
+        .form-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
     </style>
 </head>
 <body class="pb-20">
 
 <div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] transition-all duration-500 opacity-0 -translate-y-10 pointer-events-none text-center">
-    <div class="bg-zinc-900 border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
-        <span id="toastIcon"></span>
-        <p id="toastMsg" class="text-[10px] font-black uppercase tracking-widest"></p>
+    <div class="bg-zinc-900 border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-black uppercase">
+        <span id="toastIcon"></span><p id="toastMsg"></p>
     </div>
 </div>
 
 <nav class="glass fixed top-0 w-full h-20 flex items-center justify-between px-8 z-[100]">
     <div class="flex items-center gap-2">
-        <div class="w-2 h-8 bg-red-600 rounded-full shadow-[0_0_15px_#ff2d55]"></div>
-        <h1 class="text-2xl font-black italic tracking-tighter uppercase">TOM MANGA</h1>
+        <div class="w-2 h-8 bg-red-600 rounded-full"></div>
+        <h1 class="text-2xl font-black italic uppercase tracking-tighter">TOM MANGA</h1>
     </div>
-
     <div class="flex items-center gap-4">
-        <div id="userStats" class="hidden sm:block text-right">
-            <p id="userCoin" class="text-sm font-black text-yellow-500 italic">💰 0</p>
-        </div>
-
-        <div class="relative">
-            <button onclick="toggleMenu()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-all border border-white/5">
-                <span class="text-xl">⋮</span>
-            </button>
-
-            <div id="userDropdown" class="hidden absolute right-0 mt-4 w-64 bg-[#0f0f15] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110] animate-fade-in text-left">
-                <div class="p-5 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
-                    <p class="text-[8px] font-black opacity-40 uppercase tracking-[0.2em] mb-1">Identity</p>
-                    <p id="dropName" class="text-sm font-black text-white truncate italic uppercase">Guest User</p>
-                    <div class="flex items-center gap-2 mt-3 bg-black/40 p-2 rounded-lg border border-white/5">
-                        <p id="dropId" class="text-[9px] font-mono opacity-50 truncate flex-1">ID: ---</p>
-                        <button onclick="copyId()" class="text-[8px] bg-white/10 px-2 py-1 rounded hover:bg-red-600 transition-all font-bold">COPY</button>
-                    </div>
+        <div id="userStats" class="hidden sm:block text-right"><p id="userCoin" class="text-sm font-black text-yellow-500 italic">💰 0</p></div>
+        <button onclick="toggleMenu()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 border border-white/5 text-xl">⋮</button>
+        <div id="userDropdown" class="hidden absolute right-8 top-20 w-64 bg-[#0f0f15] border border-white/10 rounded-2xl shadow-2xl z-[110] p-2 text-left animate-fade">
+            <div id="dropStatus" class="text-[8px] font-black p-3 text-center bg-white/5 rounded-xl mb-2">MEMBER</div>
+            <div id="adminPanel" class="hidden border border-red-500/20 rounded-xl mb-2 p-2 bg-red-500/5 space-y-2">
+                <div class="flex items-center justify-between bg-black/40 p-2 rounded-lg border border-white/5">
+                    <span class="text-[8px] font-black">FREE MODE</span>
+                    <button id="freeModeBtn" onclick="toggleFreeMode()" class="px-3 py-1 rounded text-[8px] font-black">OFF</button>
                 </div>
-
-                <div class="p-2">
-                    <div class="grid grid-cols-2 gap-1 mb-2">
-                        <div class="p-3 bg-white/5 rounded-xl text-center">
-                            <p class="text-[7px] font-bold opacity-40 uppercase">Balance</p>
-                            <p id="dropCoin" class="text-xs font-black text-yellow-500">0</p>
-                        </div>
-                        <div class="p-3 bg-white/5 rounded-xl text-center">
-                            <p class="text-[7px] font-bold opacity-40 uppercase">Status</p>
-                            <p id="dropStatus" class="text-[8px] font-black text-green-500 uppercase mt-0.5 tracking-tighter">Member</p>
-                        </div>
-                    </div>
-
-                    <div id="adminQuickAccess" class="hidden border border-red-500/20 rounded-xl mb-2 pt-2 bg-red-500/5">
-                        <p class="px-3 text-[7px] font-black text-red-500 uppercase tracking-widest mb-2 italic">Control Panel</p>
-                        <div class="px-2 space-y-2 pb-2">
-                            <input id="targetUID" placeholder="Target User UID" class="w-full bg-black/60 p-2 rounded-lg border border-white/5 text-[9px] text-white outline-none">
-                            <div class="grid grid-cols-2 gap-1">
-                                <input id="addAmount" type="number" placeholder="Coins" class="bg-black/60 p-2 rounded-lg border border-white/5 text-[9px] text-white outline-none">
-                                <select id="vipMonths" class="bg-black/60 p-2 rounded-lg border border-white/5 text-[9px] text-white outline-none">
-                                    <option value="1">1 Month VIP</option>
-                                    <option value="3">3 Months VIP</option>
-                                    <option value="12">1 Year VIP</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-1">
-                                <button onclick="adminActionByID('coin')" class="flex-1 bg-blue-600 py-1.5 rounded text-[8px] font-black uppercase">Add Coin</button>
-                                <button onclick="adminActionByID('premium')" class="flex-1 bg-yellow-600 py-1.5 rounded text-[8px] font-black uppercase">Give VIP</button>
-                            </div>
-                            
-                            <div class="border-t border-white/5 mt-2 pt-2">
-                                <div class="flex items-center justify-between px-1 mb-1">
-                                    <p class="text-[7px] font-bold opacity-40 uppercase text-red-500">Manga Publish</p>
-                                    <button onclick="toggleMangaForm()" class="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-red-600/30 hover:scale-110 transition-transform">
-                                        <span class="text-sm font-bold">+</span>
-                                    </button>
-                                </div>
-                                <div id="mangaForm" class="hidden space-y-2 pb-2 animate-fade-in">
-                                    <input id="mTitle" placeholder="Title" class="w-full bg-black/60 p-2 rounded-lg border border-white/5 text-[9px] text-white outline-none">
-                                    <input id="mThumb" placeholder="Thumbnail URL" class="w-full bg-black/60 p-2 rounded-lg border border-white/5 text-[9px] text-white outline-none">
-                                    <textarea id="mDesc" placeholder="Summary" class="w-full bg-black/60 p-2 rounded-lg border border-white/5 text-[9px] text-white outline-none h-12"></textarea>
-                                    <div class="flex gap-1">
-                                        <button onclick="adminAddManga('ongoing')" class="flex-1 bg-green-600 py-1.5 rounded text-[8px] font-black uppercase">Ongoing</button>
-                                        <button onclick="adminAddManga('completed')" class="flex-1 bg-zinc-600 py-1.5 rounded text-[8px] font-black uppercase">Normal</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onclick="showProfile()" class="w-full text-left p-3 text-[10px] font-black uppercase hover:bg-white/5 rounded-xl transition-all">👤 Profile</button>
-                    <button onclick="buyCoinAction()" class="w-full text-left p-3 text-[10px] font-black uppercase hover:bg-yellow-500/10 rounded-xl transition-all text-yellow-500 font-bold">💰 Buy Coins</button>
-                    <div class="h-px bg-white/5 my-1"></div>
-                    <button id="authBtn" onclick="showAuth()" class="w-full text-left p-3 text-[10px] font-black uppercase hover:bg-white/5 rounded-xl transition-all">🚪 Login</button>
-                    <button id="logoutBtn" onclick="auth.signOut().then(()=>location.reload())" class="hidden w-full text-left p-3 text-[10px] font-black uppercase text-red-500 hover:bg-red-500/10 rounded-xl transition-all">🚪 Sign Out</button>
-                </div>
+                <button onclick="toggleMangaForm()" class="w-full bg-red-600 py-2 rounded text-[8px] font-black uppercase">Post Manga</button>
             </div>
+            <button onclick="buyCoinAction()" class="w-full text-left p-3 text-[10px] font-black uppercase text-yellow-500 hover:bg-white/5 rounded-xl">💰 Buy Coins</button>
+            <button id="authBtn" onclick="showAuth()" class="w-full text-left p-3 text-[10px] font-black uppercase hover:bg-white/5 rounded-xl">🚪 Login</button>
+            <button id="logoutBtn" onclick="auth.signOut().then(()=>location.reload())" class="hidden w-full text-left p-3 text-[10px] font-black uppercase text-red-500 hover:bg-red-500/10 rounded-xl">🚪 Sign Out</button>
         </div>
     </div>
 </nav>
 
 <main class="mt-32 px-6 max-w-7xl mx-auto space-y-12">
-    <div class="relative max-w-2xl mx-auto">
-        <input type="text" id="searchInput" oninput="searchManga()" placeholder="Search manga..." class="w-full bg-white/5 border border-white/10 p-5 pl-14 rounded-2xl outline-none focus:border-red-600 transition-all font-bold text-sm text-white">
-        <span class="absolute left-6 top-1/2 -translate-y-1/2 opacity-30 text-xl">🔍</span>
+    <div id="mangaForm" class="hidden bg-white/5 p-8 rounded-[32px] border border-white/10 space-y-4 animate-fade">
+        <h3 class="text-xs font-black text-red-500 uppercase tracking-widest">Post New Manga</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input id="mTitle" placeholder="Title" class="form-input">
+            <input id="mThumb" placeholder="Thumbnail URL" class="form-input">
+        </div>
+        <textarea id="mDesc" placeholder="Summary..." class="form-input h-24"></textarea>
+        <div class="flex gap-4">
+            <select id="mStatus" class="form-input flex-1">
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+            </select>
+            <button onclick="adminAddManga()" class="bg-red-600 px-8 py-3 rounded-2xl text-xs font-black uppercase flex-1 shadow-lg shadow-red-600/20">Publish</button>
+        </div>
     </div>
 
-    <section id="ongoingSection" class="hidden">
-        <div class="flex items-center gap-3 mb-6"><div class="w-1.5 h-6 bg-green-500 rounded-full"></div><h2 class="text-xl font-black italic uppercase">Latest Updates</h2></div>
-        <div id="ongoingGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8"></div>
-    </section>
+    <div id="ongoingWrapper" class="hidden space-y-6">
+        <h2 class="text-xl font-black italic uppercase border-l-4 border-green-500 pl-4">Ongoing</h2>
+        <div id="ongoingGrid" class="grid grid-cols-2 md:grid-cols-5 gap-6"></div>
+    </div>
 
-    <section>
-        <div class="flex items-center gap-3 mb-6"><div class="w-1.5 h-6 bg-red-600 rounded-full"></div><h2 class="text-xl font-black italic uppercase">Library</h2></div>
-        <div id="mangaGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8"></div>
-    </section>
+    <div class="space-y-6">
+        <h2 class="text-xl font-black italic uppercase border-l-4 border-red-600 pl-4">Library</h2>
+        <div id="mGrid" class="grid grid-cols-2 md:grid-cols-5 gap-6"></div>
+    </div>
 </main>
 
-<div id="mangaDetail" class="fixed inset-0 bg-[#08080c] z-[500] hidden overflow-y-auto">
-    <div class="sticky top-0 glass p-6 z-10 flex justify-between">
-        <button onclick="closeDetail()" class="text-red-500 font-black text-[10px] uppercase">← Back</button>
-        <span id="detailTitle" class="font-black text-xs uppercase opacity-40 italic"></span>
-        <div class="w-10"></div>
-    </div>
-    <div id="detailContent" class="max-w-4xl mx-auto p-8 pt-12"></div>
+<div id="mDetail" class="fixed inset-0 bg-[#08080c] z-[500] hidden overflow-y-auto">
+    <button onclick="closeDetail()" class="fixed top-6 left-6 z-[510] bg-white/10 w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-xl border border-white/5">←</button>
+    <div id="detailContent" class="max-w-4xl mx-auto p-8 pt-24 animate-fade"></div>
 </div>
 
-<div id="readerView" class="fixed inset-0 bg-black z-[1100] hidden overflow-y-auto">
+<div id="reader" class="fixed inset-0 bg-black z-[1100] hidden overflow-y-auto">
     <div class="fixed top-0 w-full p-4 glass flex justify-between items-center z-[1101]">
         <button onclick="closeReader()" class="text-[10px] font-black text-red-500 uppercase">Close</button>
-        <span id="readerTitle" class="text-[10px] font-bold opacity-50 uppercase"></span>
+        <span id="rTitle" class="text-[10px] font-bold opacity-50 truncate max-w-[150px]"></span>
         <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
     </div>
-    <div id="readerImages" class="pt-24 pb-10"></div>
+    <div id="rImages" class="pt-20"></div>
 </div>
 
-<div id="authModal" class="fixed inset-0 bg-[#08080c]/98 backdrop-blur-2xl z-[9999] flex items-center justify-center hidden p-6 text-center">
+<div id="authModal" class="fixed inset-0 bg-[#08080c]/98 z-[9999] flex items-center justify-center hidden p-6 text-center">
     <div class="w-full max-w-sm">
-        <h2 id="authTitle" class="text-4xl font-black mb-8 uppercase italic">Login</h2>
-        <input id="uName" placeholder="Username" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 text-white outline-none mb-4 font-bold text-center">
-        <input id="password" type="password" placeholder="Password" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 text-white outline-none mb-6 font-bold text-center">
-        <button onclick="handleAuth()" class="w-full btn-premium py-5 rounded-2xl font-black uppercase tracking-widest mb-4">Confirm</button>
-        <p onclick="toggleAuthMode()" id="toggleText" class="text-zinc-500 text-xs cursor-pointer font-bold uppercase hover:text-white">Register Account</p>
+        <h2 id="authTitle" class="text-4xl font-black mb-8 italic">LOGIN</h2>
+        <input id="uName" placeholder="Username" class="form-input mb-4 text-center">
+        <input id="password" type="password" placeholder="Password" class="form-input mb-6 text-center">
+        <button onclick="handleAuth()" class="w-full bg-red-600 py-5 rounded-2xl font-black uppercase">Confirm</button>
+        <p onclick="toggleAuthMode()" id="toggleText" class="mt-4 text-zinc-500 text-xs cursor-pointer uppercase font-bold">New Account? Register</p>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, setDoc, getDoc, getDocs, serverTimestamp, runTransaction, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, setDoc, getDoc, getDocs, serverTimestamp, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // ✅ Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k",
         authDomain: "tommangasite.firebaseapp.com",
         projectId: "tommangasite",
         storageBucket: "tommangasite.firebasestorage.app",
         messagingSenderId: "678188860278",
-        appId: "1:678188860278:web:75ffe0d7ae003ed71df057",
-        measurementId: "G-LT7B23BSMY"
+        appId: "1:678188860278:web:75ffe0d7ae003ed71df057"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let userData = null;
-    let isReg = false;
-    let pressTimer;
+    let userData = null; let isReg = false; let isFreeMode = false; let pressTimer;
 
-    // --- CORE UI LOGIC ---
-    window.notify = (msg, icon="✅") => {
-        const t = document.getElementById("toast");
-        document.getElementById("toastMsg").innerText = msg;
-        document.getElementById("toastIcon").innerText = icon;
-        t.classList.remove("opacity-0", "-translate-y-10");
-        setTimeout(() => t.classList.add("opacity-0", "-translate-y-10"), 3000);
-    };
+    // --- FREE MODE ---
+    onSnapshot(doc(db, "settings", "global"), d => {
+        if(d.exists()) {
+            isFreeMode = d.data().isFreeMode;
+            const btn = document.getElementById("freeModeBtn");
+            btn.innerText = isFreeMode ? "ON" : "OFF";
+            btn.className = isFreeMode ? "px-3 py-1 rounded bg-green-600 text-[8px] font-black" : "px-3 py-1 rounded bg-zinc-700 text-[8px] font-black";
+        }
+    });
 
-    window.toggleMenu = () => document.getElementById("userDropdown").classList.toggle("hidden");
-    window.toggleMangaForm = () => document.getElementById("mangaForm").classList.toggle("hidden");
+    window.toggleFreeMode = async () => { await setDoc(doc(db, "settings", "global"), { isFreeMode: !isFreeMode }, { merge: true }); };
 
-    window.copyId = () => {
-        const uid = auth.currentUser ? auth.currentUser.uid : "---";
-        navigator.clipboard.writeText(uid);
-        notify("User ID Copied!");
-    };
-
-    window.buyCoinAction = () => {
-        const uid = auth.currentUser ? auth.currentUser.uid : "GUEST";
-        navigator.clipboard.writeText(uid);
-        notify("ID Copied! Redirecting to Telegram...", "✈️");
-        setTimeout(() => {
-            const message = encodeURIComponent(`Hello Owner, I want to buy coins.\nMy User ID: ${uid}`);
-            window.open(`https://t.me/gogolover1514?text=${message}`, '_blank');
-        }, 1500);
-    };
-
-    // --- AUTH & ROLES ---
+    // --- AUTH ---
     onAuthStateChanged(auth, user => {
         if(user) {
             onSnapshot(doc(db, "users", user.uid), d => {
                 userData = d.data();
                 document.getElementById("userCoin").innerText = "💰 " + (userData.coin || 0);
-                document.getElementById("dropCoin").innerText = (userData.coin || 0);
-                document.getElementById("dropName").innerText = userData.username;
-                document.getElementById("dropId").innerText = "ID: " + user.uid;
-                
-                const isVIP = userData.isPremium && (userData.expiryDate?.toDate() > new Date());
-                const statusEl = document.getElementById("dropStatus");
-
-                if (userData.role === 'owner') {
-                    statusEl.innerText = "OWNER";
-                    statusEl.className = "text-[8px] font-black text-red-500 uppercase mt-0.5 animate-pulse tracking-widest";
-                    document.getElementById("adminQuickAccess").classList.remove("hidden");
-                } else if (userData.role === 'admin') {
-                    statusEl.innerText = "ADMIN";
-                    statusEl.className = "text-[8px] font-black text-blue-500 uppercase mt-0.5 tracking-widest";
-                    document.getElementById("adminQuickAccess").classList.remove("hidden");
+                const st = document.getElementById("dropStatus");
+                if(userData.role === 'owner') {
+                    st.innerText = "OWNER"; st.className = "text-[8px] font-black text-red-500 p-3 bg-red-500/10 rounded-xl mb-2";
+                    document.getElementById("adminPanel").classList.remove("hidden");
                 } else {
-                    statusEl.innerText = isVIP ? "VIP" : "MEMBER";
-                    statusEl.className = isVIP ? "text-[8px] font-black text-yellow-500 uppercase mt-0.5" : "text-[8px] font-black text-green-500 uppercase mt-0.5";
-                    document.getElementById("adminQuickAccess").classList.add("hidden");
+                    st.innerText = "MEMBER"; st.className = "text-[8px] font-black text-green-500 p-3 bg-white/5 rounded-xl mb-2";
                 }
             });
             document.getElementById("authBtn").classList.add("hidden");
             document.getElementById("logoutBtn").classList.remove("hidden");
-        } else {
-            document.getElementById("authBtn").classList.remove("hidden");
-            document.getElementById("logoutBtn").classList.add("hidden");
         }
     });
 
-    // --- OWNER ACTIONS (EDIT & DELETE) ---
-    window.handlePressStart = (mId, cId) => {
-        pressTimer = window.setTimeout(() => {
-            if(userData?.role === 'owner' || userData?.role === 'admin') {
-                window.firstCheck(mId, cId);
-            }
-        }, 800);
+    // --- MANGA LOADING ---
+    onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc")), snap => {
+        const grid = document.getElementById("mGrid");
+        const onGrid = document.getElementById("ongoingGrid");
+        const onWrapper = document.getElementById("ongoingWrapper");
+        grid.innerHTML = ""; onGrid.innerHTML = ""; let hasOngoing = false;
+
+        snap.forEach(d => {
+            const m = d.data();
+            const card = `<div onclick="viewDetail('${d.id}')" class="manga-card cursor-pointer animate-fade">
+                ${m.status === 'ongoing' ? '<div class="status-badge">Ongoing</div>' : ''}
+                <img src="${m.thumbnail}" class="aspect-[3/4] object-cover w-full">
+                <div class="p-4 text-[10px] font-black uppercase truncate italic">${m.title}</div>
+            </div>`;
+            grid.innerHTML += card;
+            if(m.status === 'ongoing') { onGrid.innerHTML += card; hasOngoing = true; }
+        });
+        onWrapper.style.display = hasOngoing ? "block" : "none";
+    });
+
+    // --- DETAIL & EDIT & CHAPTER FORM ---
+    window.viewDetail = async id => {
+        const m = (await getDoc(doc(db, "manga", id))).data();
+        const content = document.getElementById("detailContent");
+        document.getElementById("mDetail").classList.remove("hidden");
+        const isOwner = userData?.role === 'owner';
+        
+        content.innerHTML = `
+            <div id="detailHeader" class="relative md:flex gap-10 items-start mb-12">
+                ${isOwner ? `<button onclick="editMangaUI('${id}')" class="absolute -top-4 -right-4 bg-white/10 hover:bg-red-600 w-12 h-12 rounded-full flex items-center justify-center border border-white/10 text-lg shadow-xl z-20 transition-all">✏️</button>` : ''}
+                <img src="${m.thumbnail}" class="w-48 rounded-[40px] shadow-2xl mx-auto md:mx-0 mb-6 border border-white/5">
+                <div class="flex-1 text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start gap-3 mb-4">
+                        <h2 class="text-4xl font-black uppercase italic tracking-tighter">${m.title}</h2>
+                        <span class="text-[8px] bg-white/10 px-3 py-1 rounded-full uppercase font-bold tracking-widest">${m.status || 'Completed'}</span>
+                    </div>
+                    <p class="text-zinc-500 text-sm italic mb-8 leading-relaxed opacity-80">${m.description || 'No summary available.'}</p>
+                    ${isOwner ? `<button onclick="showChapterForm('${id}')" class="bg-red-600 px-8 py-3 rounded-2xl text-[10px] font-black uppercase">Add Episode +</button>` : ''}
+                </div>
+            </div>
+            <div id="chapterFormBox" class="hidden bg-white/5 p-6 rounded-[32px] border border-white/10 mb-8 space-y-4 animate-fade">
+                <h3 class="text-[10px] font-black uppercase text-red-500">New Episode</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="cTitle" placeholder="Ep Title (e.g. Ep 01)" class="form-input">
+                    <input id="cPrice" type="number" placeholder="Price (0 for free)" class="form-input">
+                </div>
+                <textarea id="cPages" placeholder="Image URLs (comma separated)" class="form-input h-24"></textarea>
+                <div class="flex gap-2">
+                    <button onclick="saveNewChapter('${id}')" class="flex-1 bg-red-600 py-3 rounded-xl text-[10px] font-black">SAVE EPISODE</button>
+                    <button onclick="document.getElementById('chapterFormBox').classList.add('hidden')" class="bg-white/10 px-6 rounded-xl text-[10px] font-black">CANCEL</button>
+                </div>
+            </div>
+            <div id="chapList" class="grid gap-3 pt-6 border-t border-white/5"></div>`;
+
+        loadChapters(id, isOwner);
     };
 
-    window.handlePressEnd = () => clearTimeout(pressTimer);
-
-    window.firstCheck = (mId, cId) => {
-        if(confirm("⚠️ Delete this episode?")) window.finalCheck(mId, cId);
+    const loadChapters = async (mId, isOwner) => {
+        const chapList = document.getElementById("chapList");
+        chapList.innerHTML = "";
+        const chaps = await getDocs(query(collection(db, "manga", mId, "chapters"), orderBy("createdAt", "asc")));
+        chaps.forEach(cDoc => {
+            const c = cDoc.data(); const btn = document.createElement("div");
+            btn.className = "bg-white/5 p-5 rounded-2xl flex justify-between items-center cursor-pointer border border-transparent hover:border-red-600 transition-all select-none";
+            btn.onmousedown = () => { pressTimer = setTimeout(() => { if(isOwner) deleteChap(mId, cDoc.id); }, 1000); };
+            btn.onmouseup = () => clearTimeout(pressTimer);
+            btn.ontouchstart = () => { pressTimer = setTimeout(() => { if(isOwner) deleteChap(mId, cDoc.id); }, 1000); };
+            btn.ontouchend = () => clearTimeout(pressTimer);
+            btn.onclick = () => unlockChapter(mId, cDoc.id, c.price);
+            btn.innerHTML = `<span class="font-bold text-xs uppercase">${c.title}</span>
+                             <span class="text-[10px] font-black ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'}">${isFreeMode ? 'FREE' : (c.price > 0 ? '💰 ' + c.price : 'FREE')}</span>`;
+            chapList.appendChild(btn);
+        });
     };
 
-    window.finalCheck = async (mId, cId) => {
-        if(confirm("❗ Are you absolutely sure? This cannot be undone!")) {
-            try {
-                await deleteDoc(doc(db, "manga", mId, "chapters", cId));
-                notify("Episode Deleted!", "🗑️");
-                viewDetail(mId);
-            } catch(e) { notify("Error!", "⚠️"); }
-        }
-    };
+    window.showChapterForm = (id) => { document.getElementById("chapterFormBox").classList.remove("hidden"); };
 
-    window.editManga = async (id) => {
-        const mRef = doc(db, "manga", id);
-        const m = (await getDoc(mRef)).data();
-        const newTitle = prompt("Edit Title:", m.title);
-        const newThumb = prompt("Edit Thumbnail URL:", m.thumbnail);
-        const newDesc = prompt("Edit Summary:", m.description);
-
-        if(newTitle && newThumb) {
-            await updateDoc(mRef, { title: newTitle, thumbnail: newThumb, description: newDesc });
-            notify("Manga Updated!", "✏️");
+    window.saveNewChapter = async (id) => {
+        const title = document.getElementById("cTitle").value;
+        const price = parseInt(document.getElementById("cPrice").value) || 0;
+        const pages = document.getElementById("cPages").value;
+        if(title && pages) {
+            await addDoc(collection(db, "manga", id, "chapters"), { 
+                title, price, pages: pages.split(",").map(i=>i.trim()), createdAt: serverTimestamp() 
+            });
+            notify("Episode Added!");
             viewDetail(id);
         }
     };
 
-    // --- ADMIN CONTROLS ---
-    window.adminActionByID = async (type) => {
-        const uid = document.getElementById("targetUID").value.trim();
-        const amt = parseInt(document.getElementById("addAmount").value);
-        const months = parseInt(document.getElementById("vipMonths").value);
-
-        if(!uid) return notify("Enter UID", "⚠️");
-        try {
-            const uRef = doc(db, "users", uid);
-            const uSnap = await getDoc(uRef);
-            if(!uSnap.exists()) return notify("User not found!", "❌");
-
-            if(type === 'coin') {
-                await updateDoc(uRef, { coin: (uSnap.data().coin || 0) + amt });
-                notify("Added Coins!");
-            } else {
-                let exp = new Date();
-                if(uSnap.data().expiryDate?.toDate() > exp) exp = uSnap.data().expiryDate.toDate();
-                exp.setMonth(exp.getMonth() + months);
-                await updateDoc(uRef, { isPremium: true, expiryDate: exp });
-                notify(`Added ${months} months VIP!`);
-            }
-        } catch(e) { notify("Error!", "⚠️"); }
-    };
-
-    window.adminAddManga = async (status) => {
-        const title = document.getElementById("mTitle").value;
-        const thumbnail = document.getElementById("mThumb").value;
-        const description = document.getElementById("mDesc").value;
-        if(!title || !thumbnail) return notify("Missing Info", "⚠️");
-        await addDoc(collection(db, "manga"), { title, thumbnail, description, status, createdAt: serverTimestamp() });
-        notify("Published!");
-        toggleMangaForm();
-    };
-
-    // --- LOADING & READER LOGIC ---
-    onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc")), snap => {
-        const allGrid = document.getElementById("mangaGrid");
-        const onGrid = document.getElementById("ongoingGrid");
-        allGrid.innerHTML = ""; onGrid.innerHTML = "";
-        snap.forEach(docSnap => {
-            const m = docSnap.data();
-            const id = docSnap.id;
-            const card = `<div class="manga-card group cursor-pointer" onclick="viewDetail('${id}')">
-                <div class="relative aspect-[3/4] overflow-hidden">
-                    <img src="${m.thumbnail}" class="w-full h-full object-cover transition-transform group-hover:scale-110">
-                    ${m.status === 'ongoing' ? '<span class="absolute top-2 left-2 bg-green-500 text-[7px] font-black px-2 py-0.5 rounded-sm uppercase tracking-tighter shadow-lg">Ongoing</span>' : ''}
-                </div>
-                <div class="p-4"><h4 class="font-black text-[9px] uppercase truncate tracking-widest italic">${m.title}</h4></div>
-            </div>`;
-            allGrid.innerHTML += card;
-            if(m.status === 'ongoing') {
-                onGrid.innerHTML += card;
-                document.getElementById("ongoingSection").classList.remove("hidden");
-            }
-        });
-    });
-
-    window.searchManga = () => {
-        const q = document.getElementById("searchInput").value.toLowerCase();
-        document.querySelectorAll(".manga-card").forEach(c => {
-            c.style.display = c.innerText.toLowerCase().includes(q) ? "block" : "none";
-        });
-    };
-
-    window.viewDetail = async id => {
+    window.editMangaUI = async (id) => {
         const m = (await getDoc(doc(db, "manga", id))).data();
-        document.getElementById("mangaDetail").classList.remove("hidden");
-        document.getElementById("detailTitle").innerText = m.title;
-        const isOwner = userData?.role === 'owner' || userData?.role === 'admin';
         const content = document.getElementById("detailContent");
-        
-        content.innerHTML = `<div class="flex flex-col md:flex-row gap-10 mb-12">
-            <img src="${m.thumbnail}" class="w-56 rounded-[40px] shadow-2xl border border-white/5 mx-auto md:mx-0">
-            <div class="flex-1 text-center md:text-left">
-                <div class="flex items-center justify-center md:justify-start gap-4 mb-4">
-                    <h2 class="text-5xl font-black uppercase italic tracking-tighter">${m.title}</h2>
-                    ${isOwner ? `<button onclick="editManga('${id}')" class="text-xl opacity-40 hover:opacity-100 transition-opacity">✏️</button>` : ''}
+        content.innerHTML = `
+            <div class="bg-white/5 p-8 rounded-[40px] border border-white/10 space-y-6 animate-fade">
+                <h3 class="text-xl font-black uppercase italic text-red-500">Edit Manga Info</h3>
+                <div class="space-y-4">
+                    <input id="edT" value="${m.title}" placeholder="Title" class="form-input">
+                    <input id="edL" value="${m.thumbnail}" placeholder="Thumbnail Link" class="form-input">
+                    <textarea id="edD" placeholder="Summary" class="form-input h-32">${m.description || ''}</textarea>
+                    <select id="edS" class="form-input">
+                        <option value="ongoing" ${m.status === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                        <option value="completed" ${m.status === 'completed' ? 'selected' : ''}>Completed</option>
+                    </select>
                 </div>
-                <p class="text-zinc-500 text-xs mb-8 italic opacity-80">${m.description || 'No summary.'}</p>
-                ${isOwner ? `<button onclick="addChapUI('${id}')" class="bg-red-600 px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Add Episode +</button>` : ''}
-            </div>
-        </div>
-        <p class="text-[8px] font-bold opacity-30 uppercase mb-4 text-center italic">${isOwner ? '💡 Tip: Long press episode to delete' : ''}</p>
-        <div id="chapList" class="grid gap-4 pt-6 border-t border-white/5"></div>`;
-
-        const chaps = await getDocs(query(collection(db, "manga", id, "chapters"), orderBy("createdAt", "asc")));
-        const listContainer = content.querySelector("#chapList");
-        chaps.forEach(cDoc => {
-            const c = cDoc.data();
-            const div = document.createElement("div");
-            div.className = "bg-white/5 p-6 rounded-[28px] border border-white/5 flex justify-between items-center hover:border-red-600 cursor-pointer transition-all active:scale-95 select-none";
-            div.onmousedown = () => handlePressStart(id, cDoc.id);
-            div.onmouseup = handlePressEnd;
-            div.ontouchstart = () => handlePressStart(id, cDoc.id);
-            div.ontouchend = handlePressEnd;
-            div.onclick = () => unlockChapter(id, cDoc.id, c.price);
-            div.innerHTML = `<span class="font-bold text-sm uppercase italic tracking-widest">${c.title}</span><span class="font-black text-xs ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'}">${c.price > 0 ? '💰 ' + c.price : 'FREE'}</span>`;
-            listContainer.appendChild(div);
-        });
+                <div class="flex gap-3">
+                    <button onclick="saveEdit('${id}')" class="flex-1 bg-red-600 py-4 rounded-2xl font-black uppercase text-xs">Save</button>
+                    <button onclick="viewDetail('${id}')" class="flex-1 bg-white/5 py-4 rounded-2xl font-black uppercase text-[10px]">Cancel</button>
+                </div>
+            </div>`;
     };
 
+    window.saveEdit = async (id) => {
+        const title = document.getElementById("edT").value;
+        const thumbnail = document.getElementById("edL").value;
+        const description = document.getElementById("edD").value;
+        const status = document.getElementById("edS").value;
+        if(title && thumbnail) {
+            await updateDoc(doc(db, "manga", id), { title, thumbnail, description, status });
+            notify("Manga Updated!", "✏️"); viewDetail(id);
+        }
+    };
+
+    // --- BUY & READ LOGIC ---
     window.unlockChapter = async (mId, cId, price) => {
-        if(price === 0) return openReader(mId, cId);
         if(!userData) return showAuth();
-        if(userData.role === 'owner' || (userData.isPremium && userData.expiryDate.toDate() > new Date()) || userData.unlockedChapters?.[cId]) return openReader(mId, cId);
-        if(userData.coin < price) return notify("Not enough coins", "⚠️");
+        const canWatch = isFreeMode || price === 0 || userData?.role === 'owner' || (userData?.unlockedChapters && userData.unlockedChapters[cId]);
+        if(canWatch) return openReader(mId, cId);
+        if(userData.coin < price) return notify("Need more coins!", "⚠️");
+        
         if(confirm(`Unlock for ${price} coins?`)) {
-            await runTransaction(db, async t => {
-                const uRef = doc(db, "users", auth.currentUser.uid);
-                const current = (await t.get(uRef)).data().unlockedChapters || {};
-                current[cId] = true;
-                t.update(uRef, { coin: userData.coin - price, unlockedChapters: current });
-            });
-            openReader(mId, cId);
+            try {
+                await runTransaction(db, async t => {
+                    const uRef = doc(db, "users", auth.currentUser.uid);
+                    const freshUser = (await t.get(uRef)).data();
+                    if(freshUser.coin < price) throw "Insufficient coins";
+                    const current = freshUser.unlockedChapters || {};
+                    current[cId] = true;
+                    t.update(uRef, { coin: freshUser.coin - price, unlockedChapters: current });
+                });
+                openReader(mId, cId);
+            } catch(e) { notify(e, "❌"); }
         }
     };
 
     window.openReader = async (mId, cId) => {
         const c = (await getDoc(doc(db, "manga", mId, "chapters", cId))).data();
-        document.getElementById("readerTitle").innerText = c.title;
-        document.getElementById("readerImages").innerHTML = c.pages.map(u => `<img src="${u}" class="reader-img" onload="this.style.opacity=1" loading="lazy">`).join('');
-        document.getElementById("readerView").classList.remove("hidden");
+        document.getElementById("rTitle").innerText = c.title;
+        document.getElementById("rImages").innerHTML = c.pages.map(u => `<img src="${u}" class="reader-img" onload="this.style.opacity=1" loading="lazy">`).join('');
+        document.getElementById("reader").classList.remove("hidden");
     };
 
-    window.closeDetail = () => document.getElementById("mangaDetail").classList.add("hidden");
-    window.closeReader = () => { document.getElementById("readerView").classList.add("hidden"); document.getElementById("readerImages").innerHTML = ""; };
-    window.addChapUI = async id => {
-        const t = prompt("Episode Title?");
-        const p = parseInt(prompt("Price?")) || 0;
-        const u = prompt("Image URLs (comma separated)?");
-        if(t && u) {
-            await addDoc(collection(db, "manga", id, "chapters"), { title: t, price: p, pages: u.split(",").map(i => i.trim()), createdAt: serverTimestamp() });
-            viewDetail(id);
-        }
+    // --- OTHERS ---
+    window.deleteChap = async (mId, cId) => { if(confirm("Delete episode?")) { await deleteDoc(doc(db, "manga", mId, "chapters", cId)); viewDetail(mId); } };
+    window.adminAddManga = async () => {
+        const t = document.getElementById("mTitle").value; const l = document.getElementById("mThumb").value;
+        const s = document.getElementById("mStatus").value;
+        if(t && l) { await addDoc(collection(db, "manga"), { title: t, thumbnail: l, description: document.getElementById("mDesc").value, status: s, createdAt: serverTimestamp() }); toggleMangaForm(); }
     };
-
+    window.notify = (m, i="✅") => { const t = document.getElementById("toast"); document.getElementById("toastMsg").innerText = m; document.getElementById("toastIcon").innerText = i; t.classList.remove("opacity-0", "-translate-y-10"); setTimeout(() => t.classList.add("opacity-0", "-translate-y-10"), 3000); };
+    window.toggleMenu = () => document.getElementById("userDropdown").classList.toggle("hidden");
+    window.toggleMangaForm = () => document.getElementById("mangaForm").classList.toggle("hidden");
+    window.closeDetail = () => document.getElementById("mDetail").classList.add("hidden");
+    window.closeReader = () => { document.getElementById("reader").classList.add("hidden"); document.getElementById("rImages").innerHTML = ""; };
     window.showAuth = () => document.getElementById("authModal").classList.remove("hidden");
     window.toggleAuthMode = () => { isReg = !isReg; document.getElementById("authTitle").innerText = isReg ? "REGISTER" : "LOGIN"; };
     window.handleAuth = async () => {
-        const u = document.getElementById("uName").value.trim().toLowerCase();
-        const p = document.getElementById("password").value;
-        const email = `${u}@tommanga.com`;
+        const u = document.getElementById("uName").value.trim().toLowerCase(); const p = document.getElementById("password").value;
         try {
             if(isReg) {
-                const r = await createUserWithEmailAndPassword(auth, email, p);
-                await setDoc(doc(db, "users", r.user.uid), { username: u, coin: 0, role: "member", unlockedChapters: {} });
-                location.reload();
-            } else { await signInWithEmailAndPassword(auth, email, p); document.getElementById("authModal").classList.add("hidden"); }
-        } catch(e) { notify("Auth Failed!", "❌"); }
+                const r = await createUserWithEmailAndPassword(auth, `${u}@tommanga.com`, p);
+                await setDoc(doc(db, "users", r.user.uid), { username: u, coin: 0, role: "member", unlockedChapters: {} }); location.reload();
+            } else { await signInWithEmailAndPassword(auth, `${u}@tommanga.com`, p); document.getElementById("authModal").classList.add("hidden"); }
+        } catch(e) { notify("Failed", "❌"); }
     };
+    window.buyCoinAction = () => { navigator.clipboard.writeText(auth.currentUser?.uid || "GUEST"); notify("ID Copied!"); setTimeout(() => window.open(`https://t.me/gogolover1514`), 1000); };
+
 </script>
 </body>
 </html>
