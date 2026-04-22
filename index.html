@@ -3,104 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TOM MANGA | Pro Version</title>
+    <title>TOM MANGA | Next-Gen</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #ff2d55; }
+        :root { --accent: #ff2d55; --glow: rgba(255, 45, 85, 0.5); }
         body { background: #08080c; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
         .glass { background: rgba(8, 8, 12, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .manga-card { background: rgba(255,255,255,0.02); border-radius: 24px; transition: 0.4s; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .manga-card:hover { transform: translateY(-8px); border-color: var(--accent); }
-        .status-badge { position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; font-size: 8px; font-weight: 900; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; z-index: 10; }
-        .reader-img { width: 100%; max-width: 100%; margin: 0 auto; display: block; opacity: 0; transition: opacity 0.5s; image-rendering: -webkit-optimize-contrast; }
-        .animate-fade { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px 16px; width: 100%; outline: none; transition: 0.3s; }
-        .form-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        .manga-card { background: rgba(255,255,255,0.02); border-radius: 24px; transition: 0.4s ease; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; }
+        .manga-card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 10px 30px var(--glow); }
+        .manga-card img { transition: 0.5s ease; }
+        .manga-card:hover img { transform: scale(1.1); filter: brightness(1.1); }
+        .status-badge { position: absolute; top: 12px; left: 12px; background: #22c55e; color: white; font-size: 8px; font-weight: 900; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; z-index: 10; box-shadow: 0 2px 10px rgba(34, 197, 94, 0.5); }
+        .reader-img { width: 100%; max-width: 100%; margin: 0 auto; display: block; opacity: 0; transition: opacity 0.6s ease; image-rendering: -webkit-optimize-contrast; }
+        .animate-fade { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 14px 20px; width: 100%; outline: none; transition: 0.3s ease; color: #fff; }
+        .form-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: 0 0 15px var(--glow); }
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="pb-20">
 
 <div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] transition-all duration-500 opacity-0 -translate-y-10 pointer-events-none text-center">
-    <div class="bg-zinc-900 border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-black uppercase">
+    <div class="bg-zinc-900 border border-white/10 px-8 py-4 rounded-full shadow-2xl flex items-center gap-4 text-sm font-bold uppercase tracking-wider">
         <span id="toastIcon"></span><p id="toastMsg"></p>
     </div>
 </div>
 
-<nav class="glass fixed top-0 w-full h-20 flex items-center justify-between px-8 z-[100]">
-    <div class="flex items-center gap-2">
-        <div class="w-2 h-8 bg-red-600 rounded-full"></div>
-        <h1 class="text-2xl font-black italic uppercase tracking-tighter">TOM MANGA</h1>
+<nav class="glass fixed top-0 w-full h-24 flex items-center justify-between px-10 z-[100]">
+    <div class="flex items-center gap-3">
+        <div class="w-3 h-10 bg-red-600 rounded-full shadow-[0_0_20px_var(--glow)]"></div>
+        <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">TOM MANGA</h1>
     </div>
-    <div class="flex items-center gap-4">
-        <div id="userStats" class="hidden sm:block text-right"><p id="userCoin" class="text-sm font-black text-yellow-500 italic">💰 0</p></div>
-        <button onclick="toggleMenu()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 border border-white/5 text-xl">⋮</button>
-        <div id="userDropdown" class="hidden absolute right-8 top-20 w-64 bg-[#0f0f15] border border-white/10 rounded-2xl shadow-2xl z-[110] p-2 text-left animate-fade">
-            <div id="dropStatus" class="text-[8px] font-black p-3 text-center bg-white/5 rounded-xl mb-2">MEMBER</div>
-            <div id="adminPanel" class="hidden border border-red-500/20 rounded-xl mb-2 p-2 bg-red-500/5 space-y-2">
-                <div class="flex items-center justify-between bg-black/40 p-2 rounded-lg border border-white/5">
-                    <span class="text-[8px] font-black">FREE MODE</span>
-                    <button id="freeModeBtn" onclick="toggleFreeMode()" class="px-3 py-1 rounded text-[8px] font-black">OFF</button>
+    <div class="flex items-center gap-6">
+        <div id="userStats" class="hidden sm:block text-right"><p id="userCoin" class="text-lg font-black text-yellow-500 italic">💰 0</p></div>
+        <button onclick="toggleMenu()" class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 border border-white/10 text-2xl text-white transition-all">⋮</button>
+        <div id="userDropdown" class="hidden absolute right-10 top-24 w-72 bg-[#0f0f15] border border-white/10 rounded-3xl shadow-2xl z-[110] p-3 text-left animate-fade">
+            <div id="dropStatus" class="text-[10px] font-black p-4 text-center bg-white/5 rounded-2xl mb-3 tracking-widest text-green-500">MEMBER</div>
+            <div id="adminPanel" class="hidden border border-red-500/30 rounded-2xl mb-3 p-3 bg-red-500/5 space-y-3">
+                <div class="flex items-center justify-between bg-black/50 p-3 rounded-xl border border-white/5">
+                    <span class="text-[10px] font-black text-white">FREE MODE</span>
+                    <button id="freeModeBtn" onclick="toggleFreeMode()" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all">OFF</button>
                 </div>
-                <button onclick="toggleMangaForm()" class="w-full bg-red-600 py-2 rounded text-[8px] font-black uppercase">Post Manga</button>
+                <button onclick="toggleMangaForm()" class="w-full bg-red-600 py-3 rounded-xl text-[10px] font-black uppercase text-white shadow-lg shadow-red-600/20">Post Manga</button>
             </div>
-            <button onclick="buyCoinAction()" class="w-full text-left p-3 text-[10px] font-black uppercase text-yellow-500 hover:bg-white/5 rounded-xl">💰 Buy Coins</button>
-            <button id="authBtn" onclick="showAuth()" class="w-full text-left p-3 text-[10px] font-black uppercase hover:bg-white/5 rounded-xl">🚪 Login</button>
-            <button id="logoutBtn" onclick="auth.signOut().then(()=>location.reload())" class="hidden w-full text-left p-3 text-[10px] font-black uppercase text-red-500 hover:bg-red-500/10 rounded-xl">🚪 Sign Out</button>
+            <button onclick="buyCoinAction()" class="w-full text-left p-4 text-xs font-black uppercase text-yellow-500 hover:bg-white/5 rounded-2xl transition-all">💰 Buy Coins</button>
+            <button id="authBtn" onclick="showAuth()" class="w-full text-left p-4 text-xs font-black uppercase text-white hover:bg-white/5 rounded-2xl transition-all">🚪 Login</button>
+            <button id="logoutBtn" onclick="auth.signOut().then(()=>location.reload())" class="hidden w-full text-left p-4 text-xs font-black uppercase text-red-500 hover:bg-red-500/10 rounded-2xl transition-all">🚪 Sign Out</button>
         </div>
     </div>
 </nav>
 
-<main class="mt-32 px-6 max-w-7xl mx-auto space-y-12">
-    <div id="mangaForm" class="hidden bg-white/5 p-8 rounded-[32px] border border-white/10 space-y-4 animate-fade">
-        <h3 class="text-xs font-black text-red-500 uppercase tracking-widest">Post New Manga</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<main class="mt-40 px-8 max-w-7xl mx-auto space-y-16">
+    <div id="mangaForm" class="hidden bg-white/5 p-10 rounded-[40px] border border-white/10 space-y-6 animate-fade">
+        <h3 class="text-sm font-black text-red-500 uppercase tracking-widest">Post New Manga</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input id="mTitle" placeholder="Title" class="form-input">
             <input id="mThumb" placeholder="Thumbnail URL" class="form-input">
         </div>
-        <textarea id="mDesc" placeholder="Summary..." class="form-input h-24"></textarea>
-        <div class="flex gap-4">
+        <textarea id="mDesc" placeholder="Summary..." class="form-input h-32"></textarea>
+        <div class="flex gap-6">
             <select id="mStatus" class="form-input flex-1">
                 <option value="ongoing">Ongoing</option>
                 <option value="completed">Completed</option>
             </select>
-            <button onclick="adminAddManga()" class="bg-red-600 px-8 py-3 rounded-2xl text-xs font-black uppercase flex-1 shadow-lg shadow-red-600/20">Publish</button>
+            <button onclick="adminAddManga()" class="bg-red-600 px-10 py-4 rounded-2xl text-xs font-black uppercase flex-1 shadow-xl shadow-red-600/30 text-white">Publish</button>
         </div>
     </div>
 
-    <div id="ongoingWrapper" class="hidden space-y-6">
-        <h2 class="text-xl font-black italic uppercase border-l-4 border-green-500 pl-4">Ongoing</h2>
-        <div id="ongoingGrid" class="grid grid-cols-2 md:grid-cols-5 gap-6"></div>
+    <div id="ongoingWrapper" class="hidden space-y-8">
+        <h2 class="text-2xl font-black italic uppercase border-l-4 border-green-500 pl-5 text-white tracking-tight">Ongoing Updates</h2>
+        <div id="ongoingGrid" class="grid grid-cols-2 md:grid-cols-5 gap-8"></div>
     </div>
 
-    <div class="space-y-6">
-        <h2 class="text-xl font-black italic uppercase border-l-4 border-red-600 pl-4">Library</h2>
-        <div id="mGrid" class="grid grid-cols-2 md:grid-cols-5 gap-6"></div>
+    <div class="space-y-8">
+        <h2 class="text-2xl font-black italic uppercase border-l-4 border-red-600 pl-5 text-white tracking-tight">Manga Library</h2>
+        <div id="mGrid" class="grid grid-cols-2 md:grid-cols-5 gap-8">
+            <div class="manga-card skeleton aspect-[3/4]"></div>
+            <div class="manga-card skeleton aspect-[3/4]"></div>
+            <div class="manga-card skeleton aspect-[3/4]"></div>
+            <div class="manga-card skeleton aspect-[3/4]"></div>
+            <div class="manga-card skeleton aspect-[3/4]"></div>
+        </div>
     </div>
 </main>
 
 <div id="mDetail" class="fixed inset-0 bg-[#08080c] z-[500] hidden overflow-y-auto">
-    <button onclick="closeDetail()" class="fixed top-6 left-6 z-[510] bg-white/10 w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-xl border border-white/5">←</button>
-    <div id="detailContent" class="max-w-4xl mx-auto p-8 pt-24 animate-fade"></div>
+    <button onclick="closeDetail()" class="fixed top-8 left-8 z-[510] bg-white/10 w-14 h-14 flex items-center justify-center rounded-full backdrop-blur-xl border border-white/10 text-white transition-all hover:bg-white/20">←</button>
+    <div id="detailContent" class="max-w-4xl mx-auto p-10 pt-32 animate-fade"></div>
 </div>
 
 <div id="reader" class="fixed inset-0 bg-black z-[1100] hidden overflow-y-auto">
-    <div class="fixed top-0 w-full p-4 glass flex justify-between items-center z-[1101]">
-        <button onclick="closeReader()" class="text-[10px] font-black text-red-500 uppercase">Close</button>
-        <span id="rTitle" class="text-[10px] font-bold opacity-50 truncate max-w-[150px]"></span>
-        <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+    <div class="fixed top-0 w-full p-5 glass flex justify-between items-center z-[1101]">
+        <button onclick="closeReader()" class="text-xs font-black text-red-500 uppercase tracking-wider">Close</button>
+        <span id="rTitle" class="text-xs font-bold opacity-60 truncate max-w-[200px] text-white"></span>
+        <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_var(--glow)]"></div>
     </div>
-    <div id="rImages" class="pt-20"></div>
+    <div id="rImages" class="pt-24 pb-10"></div>
 </div>
 
-<div id="authModal" class="fixed inset-0 bg-[#08080c]/98 z-[9999] flex items-center justify-center hidden p-6 text-center">
-    <div class="w-full max-w-sm">
-        <h2 id="authTitle" class="text-4xl font-black mb-8 italic">LOGIN</h2>
-        <input id="uName" placeholder="Username" class="form-input mb-4 text-center">
-        <input id="password" type="password" placeholder="Password" class="form-input mb-6 text-center">
-        <button onclick="handleAuth()" class="w-full bg-red-600 py-5 rounded-2xl font-black uppercase">Confirm</button>
-        <p onclick="toggleAuthMode()" id="toggleText" class="mt-4 text-zinc-500 text-xs cursor-pointer uppercase font-bold">New Account? Register</p>
+<div id="authModal" class="fixed inset-0 bg-[#08080c]/98 z-[9999] flex items-center justify-center hidden p-8 text-center">
+    <div class="w-full max-w-md bg-[#0f0f15] p-12 rounded-[40px] border border-white/10 animate-fade">
+        <h2 id="authTitle" class="text-5xl font-black mb-10 italic text-white tracking-tighter">LOGIN</h2>
+        <input id="uName" placeholder="Username" class="form-input mb-5 text-center text-lg font-bold">
+        <input id="password" type="password" placeholder="Password" class="form-input mb-8 text-center text-lg font-bold">
+        <button onclick="handleAuth()" class="w-full bg-red-600 py-5 rounded-2xl font-black uppercase text-white shadow-xl shadow-red-600/30 transition-all hover:scale-[1.02]">Confirm</button>
+        <p onclick="toggleAuthMode()" id="toggleText" class="mt-6 text-zinc-500 text-sm cursor-pointer uppercase font-bold hover:text-white transition-all">New Account? Register</p>
     </div>
 </div>
 
@@ -130,7 +140,7 @@
             isFreeMode = d.data().isFreeMode;
             const btn = document.getElementById("freeModeBtn");
             btn.innerText = isFreeMode ? "ON" : "OFF";
-            btn.className = isFreeMode ? "px-3 py-1 rounded bg-green-600 text-[8px] font-black" : "px-3 py-1 rounded bg-zinc-700 text-[8px] font-black";
+            btn.className = isFreeMode ? "px-4 py-2 rounded-lg bg-green-600 text-[10px] font-black" : "px-4 py-2 rounded-lg bg-zinc-700 text-[10px] font-black";
         }
     });
 
@@ -144,10 +154,10 @@
                 document.getElementById("userCoin").innerText = "💰 " + (userData.coin || 0);
                 const st = document.getElementById("dropStatus");
                 if(userData.role === 'owner') {
-                    st.innerText = "OWNER"; st.className = "text-[8px] font-black text-red-500 p-3 bg-red-500/10 rounded-xl mb-2";
+                    st.innerText = "OWNER"; st.className = "text-[10px] font-black text-red-500 p-4 bg-red-500/10 rounded-2xl mb-3 tracking-widest animate-pulse";
                     document.getElementById("adminPanel").classList.remove("hidden");
                 } else {
-                    st.innerText = "MEMBER"; st.className = "text-[8px] font-black text-green-500 p-3 bg-white/5 rounded-xl mb-2";
+                    st.innerText = "MEMBER"; st.className = "text-[10px] font-black text-green-500 p-4 bg-white/5 rounded-2xl mb-3 tracking-widest";
                 }
             });
             document.getElementById("authBtn").classList.add("hidden");
@@ -164,10 +174,10 @@
 
         snap.forEach(d => {
             const m = d.data();
-            const card = `<div onclick="viewDetail('${d.id}')" class="manga-card cursor-pointer animate-fade">
+            const card = `<div onclick="viewDetail('${d.id}')" class="manga-card cursor-pointer animate-fade shadow-lg border border-white/5">
                 ${m.status === 'ongoing' ? '<div class="status-badge">Ongoing</div>' : ''}
                 <img src="${m.thumbnail}" class="aspect-[3/4] object-cover w-full">
-                <div class="p-4 text-[10px] font-black uppercase truncate italic">${m.title}</div>
+                <div class="p-5 text-xs font-black uppercase truncate italic text-white tracking-wider">${m.title}</div>
             </div>`;
             grid.innerHTML += card;
             if(m.status === 'ongoing') { onGrid.innerHTML += card; hasOngoing = true; }
@@ -183,31 +193,31 @@
         const isOwner = userData?.role === 'owner';
         
         content.innerHTML = `
-            <div id="detailHeader" class="relative md:flex gap-10 items-start mb-12">
-                ${isOwner ? `<button onclick="editMangaUI('${id}')" class="absolute -top-4 -right-4 bg-white/10 hover:bg-red-600 w-12 h-12 rounded-full flex items-center justify-center border border-white/10 text-lg shadow-xl z-20 transition-all">✏️</button>` : ''}
-                <img src="${m.thumbnail}" class="w-48 rounded-[40px] shadow-2xl mx-auto md:mx-0 mb-6 border border-white/5">
+            <div id="detailHeader" class="relative md:flex gap-12 items-start mb-16 animate-fade">
+                ${isOwner ? `<button onclick="editMangaUI('${id}')" class="absolute -top-5 -right-5 bg-white/10 hover:bg-red-600 w-14 h-14 rounded-full flex items-center justify-center border border-white/10 text-xl shadow-2xl z-20 transition-all hover:scale-110">✏️</button>` : ''}
+                <img src="${m.thumbnail}" class="w-56 rounded-[48px] shadow-2xl mx-auto md:mx-0 mb-8 border border-white/10 hover:shadow-[0_0_30px_var(--glow)] transition-all">
                 <div class="flex-1 text-center md:text-left">
-                    <div class="flex items-center justify-center md:justify-start gap-3 mb-4">
-                        <h2 class="text-4xl font-black uppercase italic tracking-tighter">${m.title}</h2>
-                        <span class="text-[8px] bg-white/10 px-3 py-1 rounded-full uppercase font-bold tracking-widest">${m.status || 'Completed'}</span>
+                    <div class="flex items-center justify-center md:justify-start gap-4 mb-5">
+                        <h2 class="text-5xl font-black uppercase italic tracking-tighter text-white leading-tight">${m.title}</h2>
+                        <span class="text-[10px] bg-white/10 px-4 py-2 rounded-full uppercase font-bold tracking-widest text-white/80">${m.status || 'Completed'}</span>
                     </div>
-                    <p class="text-zinc-500 text-sm italic mb-8 leading-relaxed opacity-80">${m.description || 'No summary available.'}</p>
-                    ${isOwner ? `<button onclick="showChapterForm('${id}')" class="bg-red-600 px-8 py-3 rounded-2xl text-[10px] font-black uppercase">Add Episode +</button>` : ''}
+                    <p class="text-zinc-400 text-base italic mb-10 leading-relaxed opacity-90">${m.description || 'No summary available.'}</p>
+                    ${isOwner ? `<button onclick="showChapterForm('${id}')" class="bg-red-600 px-10 py-4 rounded-2xl text-xs font-black uppercase shadow-lg shadow-red-600/30 text-white transition-all hover:scale-105">Add Episode +</button>` : ''}
                 </div>
             </div>
-            <div id="chapterFormBox" class="hidden bg-white/5 p-6 rounded-[32px] border border-white/10 mb-8 space-y-4 animate-fade">
-                <h3 class="text-[10px] font-black uppercase text-red-500">New Episode</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="cTitle" placeholder="Ep Title (e.g. Ep 01)" class="form-input">
-                    <input id="cPrice" type="number" placeholder="Price (0 for free)" class="form-input">
+            <div id="chapterFormBox" class="hidden bg-white/5 p-10 rounded-[40px] border border-white/10 mb-12 space-y-6 animate-fade">
+                <h3 class="text-[10px] font-black uppercase text-red-500 tracking-widest">New Episode</h3>
+                <div class="grid grid-cols-2 gap-6">
+                    <input id="cTitle" placeholder="Ep Title (e.g. Ep 01)" class="form-input text-lg">
+                    <input id="cPrice" type="number" placeholder="Price (0 for free)" class="form-input text-lg">
                 </div>
-                <textarea id="cPages" placeholder="Image URLs (comma separated)" class="form-input h-24"></textarea>
-                <div class="flex gap-2">
-                    <button onclick="saveNewChapter('${id}')" class="flex-1 bg-red-600 py-3 rounded-xl text-[10px] font-black">SAVE EPISODE</button>
-                    <button onclick="document.getElementById('chapterFormBox').classList.add('hidden')" class="bg-white/10 px-6 rounded-xl text-[10px] font-black">CANCEL</button>
+                <textarea id="cPages" placeholder="Image URLs (comma separated)" class="form-input h-32"></textarea>
+                <div class="flex gap-4">
+                    <button onclick="saveNewChapter('${id}')" class="flex-1 bg-red-600 py-4 rounded-xl text-xs font-black text-white shadow-lg shadow-red-600/20">SAVE EPISODE</button>
+                    <button onclick="document.getElementById('chapterFormBox').classList.add('hidden')" class="bg-white/10 px-8 rounded-xl text-xs font-black text-white">CANCEL</button>
                 </div>
             </div>
-            <div id="chapList" class="grid gap-3 pt-6 border-t border-white/5"></div>`;
+            <div id="chapList" class="grid gap-4 pt-8 border-t border-white/10 animate-fade"></div>`;
 
         loadChapters(id, isOwner);
     };
@@ -218,14 +228,14 @@
         const chaps = await getDocs(query(collection(db, "manga", mId, "chapters"), orderBy("createdAt", "asc")));
         chaps.forEach(cDoc => {
             const c = cDoc.data(); const btn = document.createElement("div");
-            btn.className = "bg-white/5 p-5 rounded-2xl flex justify-between items-center cursor-pointer border border-transparent hover:border-red-600 transition-all select-none";
+            btn.className = "bg-white/3 p-6 rounded-3xl flex justify-between items-center cursor-pointer border border-transparent hover:border-red-600 transition-all select-none hover:shadow-[0_0_15px_var(--glow)]";
             btn.onmousedown = () => { pressTimer = setTimeout(() => { if(isOwner) deleteChap(mId, cDoc.id); }, 1000); };
             btn.onmouseup = () => clearTimeout(pressTimer);
             btn.ontouchstart = () => { pressTimer = setTimeout(() => { if(isOwner) deleteChap(mId, cDoc.id); }, 1000); };
             btn.ontouchend = () => clearTimeout(pressTimer);
             btn.onclick = () => unlockChapter(mId, cDoc.id, c.price);
-            btn.innerHTML = `<span class="font-bold text-xs uppercase">${c.title}</span>
-                             <span class="text-[10px] font-black ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'}">${isFreeMode ? 'FREE' : (c.price > 0 ? '💰 ' + c.price : 'FREE')}</span>`;
+            btn.innerHTML = `<span class="font-bold text-sm uppercase text-white tracking-wide">${c.title}</span>
+                             <span class="text-xs font-black ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'}">${isFreeMode ? 'FREE' : (c.price > 0 ? '💰 ' + c.price : 'FREE')}</span>`;
             chapList.appendChild(btn);
         });
     };
@@ -249,20 +259,20 @@
         const m = (await getDoc(doc(db, "manga", id))).data();
         const content = document.getElementById("detailContent");
         content.innerHTML = `
-            <div class="bg-white/5 p-8 rounded-[40px] border border-white/10 space-y-6 animate-fade">
-                <h3 class="text-xl font-black uppercase italic text-red-500">Edit Manga Info</h3>
+            <div class="bg-white/5 p-10 rounded-[40px] border border-white/10 space-y-6 animate-fade">
+                <h3 class="text-xl font-black uppercase italic text-red-500 tracking-widest">Edit Manga Info</h3>
                 <div class="space-y-4">
-                    <input id="edT" value="${m.title}" placeholder="Title" class="form-input">
-                    <input id="edL" value="${m.thumbnail}" placeholder="Thumbnail Link" class="form-input">
-                    <textarea id="edD" placeholder="Summary" class="form-input h-32">${m.description || ''}</textarea>
-                    <select id="edS" class="form-input">
+                    <input id="edT" value="${m.title}" placeholder="Title" class="form-input text-lg">
+                    <input id="edL" value="${m.thumbnail}" placeholder="Thumbnail Link" class="form-input text-lg">
+                    <textarea id="edD" placeholder="Summary" class="form-input h-40">${m.description || ''}</textarea>
+                    <select id="edS" class="form-input text-lg">
                         <option value="ongoing" ${m.status === 'ongoing' ? 'selected' : ''}>Ongoing</option>
                         <option value="completed" ${m.status === 'completed' ? 'selected' : ''}>Completed</option>
                     </select>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="saveEdit('${id}')" class="flex-1 bg-red-600 py-4 rounded-2xl font-black uppercase text-xs">Save</button>
-                    <button onclick="viewDetail('${id}')" class="flex-1 bg-white/5 py-4 rounded-2xl font-black uppercase text-[10px]">Cancel</button>
+                <div class="flex gap-4">
+                    <button onclick="saveEdit('${id}')" class="flex-1 bg-red-600 py-5 rounded-2xl font-black uppercase text-xs text-white shadow-xl shadow-red-600/30">Save</button>
+                    <button onclick="viewDetail('${id}')" class="flex-1 bg-white/10 py-5 rounded-2xl font-black uppercase text-[10px] text-white">Cancel</button>
                 </div>
             </div>`;
     };
