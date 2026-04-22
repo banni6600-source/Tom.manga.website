@@ -1,156 +1,128 @@
-/**
- * TOM MANGA - THE SUPREME EMPIRE V30 (ULTIMATE INTEGRATED SCRIPT)
- * EVERYTHING FROM SECURITY, WALLET, ADMIN TO ANALYTICS IS HERE.
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TOM MANGA | SUPREME EMPIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#020202] text-white selection:bg-red-500/30 overflow-x-hidden">
+    <nav class="fixed top-0 w-full z-[1000] p-6" id="navbar">
+        <div class="max-w-7xl mx-auto glass-effect px-8 py-5 flex justify-between items-center border border-white/5 rounded-[30px]">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="router.go('home')">
+                <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-blue-700 rounded-2xl flex items-center justify-center font-black shadow-lg">T</div>
+                <h1 class="text-2xl font-black italic uppercase">TOM <span class="text-red-600">MANGA</span></h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <div id="walletDisplay" class="hidden bg-white/5 px-5 py-2 rounded-full border border-yellow-500/20">
+                    <span class="text-yellow-500 font-black">💰 <span id="userBalance">0</span></span>
+                </div>
+                <button id="adminBtn" class="hidden text-[10px] font-black text-red-500 border border-red-500/30 px-4 py-2 rounded-xl" onclick="router.go('admin')">ADMIN</button>
+                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center cursor-pointer" onclick="router.go('profile')">👤</div>
+            </div>
+        </div>
+    </nav>
 
+    <main id="app" class="min-h-screen pt-32"></main>
+
+    <div id="toastBox" class="fixed bottom-10 right-10 z-[9999] flex flex-col gap-4"></div>
+    
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+:root { --red: #ff2d55; --glass: rgba(255, 255, 255, 0.03); }
+body { font-family: 'Inter', sans-serif; letter-spacing: -0.02em; }
+
+.glass-effect { background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); }
+.glass-box { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
+
+.m-card { position: relative; border-radius: 28px; overflow: hidden; aspect-ratio: 3/4; cursor: pointer; transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1); border: 1px solid rgba(255,255,255,0.05); }
+.m-card:hover { transform: translateY(-12px) scale(1.02); border-color: var(--red); box-shadow: 0 30px 60px -12px rgba(255, 45, 85, 0.3); }
+
+.reader-img { width: 100%; max-width: 800px; margin: 0 auto; display: block; animation: fadeIn 1s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.view-animate { animation: fadeIn 0.6s cubic-bezier(0.2, 1, 0.3, 1) forwards; }
+
+.input-master { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 18px; outline: none; transition: 0.3s; }
+.input-master:focus { border-color: var(--red); background: rgba(255,255,255,0.08); }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, getDoc, getDocs, runTransaction, writeBatch, serverTimestamp, query, orderBy, where, increment, limit, startAfter, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, getDoc, runTransaction, serverTimestamp, query, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// [SECTION 1: CONFIGURATION]
-const firebaseConfig = { 
-    apiKey: "YOUR_API", authDomain: "YOUR_DOMAIN", projectId: "YOUR_ID", 
-    storageBucket: "YOUR_BUCKET", messagingSenderId: "YOUR_SENDER", appId: "YOUR_APP" 
-};
+// [SECTION 1: CONFIG]
+const firebaseConfig = { apiKey: "YOUR_API", authDomain: "YOUR_DOMAIN", projectId: "YOUR_ID", storageBucket: "YOUR_BUCKET", messagingSenderId: "YOUR_SENDER", appId: "YOUR_APP" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-window.state = { user: null, activeManga: null, history: [], isLowPerf: false };
+window.state = { user: null, mangas: [], activeView: 'home' };
 
-// --- [SECTION 2: SECURITY & ENCRYPTION] ---
-window.security = {
-    salt: "TOM_EMPIRE_999",
-    encrypt: (d) => btoa(encodeURIComponent(JSON.stringify(d) + "|" + window.security.salt)),
-    decrypt: (c) => {
-        try {
-            const [d, s] = decodeURIComponent(atob(c)).split("|");
-            return s === window.security.salt ? JSON.parse(d) : null;
-        } catch(e) { return null; }
-    }
-};
-
-// --- [SECTION 3: WALLET & FINANCIAL LOGIC] ---
-window.wallet = {
-    async unlock(mid, cid, price) {
-        if (state.user.coin < price) return ui.toast("Coin မလောက်ဘူး တောသားကြီး", "⚠️");
-        
-        ui.confirm("Unlock Chapter?", `Coin ${price} သုံးမှာလား?`, async () => {
+// [SECTION 2: CORE MODULES]
+window.core = {
+    wallet: {
+        async buy(mid, cid, price) {
+            if (state.user.coin < price) return ui.toast("Coin မလောက်ဘူး", "⚠️");
             await runTransaction(db, async (t) => {
                 const uRef = doc(db, "users", auth.currentUser.uid);
-                const uSnap = await t.get(uRef);
-                let unlocked = uSnap.data().unlockedChapters || {};
+                const unlocked = (await t.get(uRef)).data().unlockedChapters || {};
                 unlocked[cid] = true;
                 t.update(uRef, { coin: increment(-price), unlockedChapters: unlocked });
-                
-                const txRef = doc(collection(db, "transactions"));
-                t.set(txRef, { uid: auth.currentUser.uid, type: "purchase", amount: price, target: cid, date: serverTimestamp() });
             });
-            ui.toast("Unlock အောင်မြင်တယ်!", "✅");
+            ui.toast("Unlocked!", "✅");
             router.go('reader', `${mid}:${cid}`);
-        });
+        }
     }
 };
 
-// --- [SECTION 4: MASTER ROUTER & RENDERING ENGINE] ---
+// [SECTION 3: ROUTER]
 window.router = {
     async go(page, id = null) {
         const root = document.getElementById("app");
-        root.innerHTML = `<div class="loader">SYNCING SUPREME DATABASE...</div>`;
-        window.scrollTo(0,0);
-
+        root.innerHTML = `<div class="h-screen flex items-center justify-center animate-pulse text-red-500 font-black">SYNCING...</div>`;
+        
         setTimeout(async () => {
-            root.className = "view-animate mt-36 max-w-7xl mx-auto px-6 pb-40";
-            switch(page) {
-                case 'home': this.renderHome(root); break;
-                case 'detail': this.renderDetail(root, id); break;
-                case 'reader': this.renderReader(root, id); break;
-                case 'admin': this.renderAdmin(root); break;
-                case 'profile': this.renderProfile(root); break;
-            }
-        }, 500);
+            root.className = "view-animate mt-10 max-w-7xl mx-auto px-6 pb-20";
+            if (page === 'home') this.renderHome(root);
+            if (page === 'detail') this.renderDetail(root, id);
+            if (page === 'reader') this.renderReader(root, id);
+        }, 400);
     },
 
-    renderHome(el) {
-        el.innerHTML = `
-            <div class="mb-20">
-                <h1 class="text-8xl font-black italic tracking-tighter uppercase">Empire</h1>
-                <div class="flex gap-4 mt-8">
-                    <input id="q" oninput="logic.search()" placeholder="Search Archive..." class="input-master w-full md:w-80">
-                </div>
-            </div>
-            <div id="mGrid" class="grid grid-cols-2 md:grid-cols-6 gap-10"></div>
-        `;
-        this.fetchGrid();
-    },
-
-    async fetchGrid() {
-        const q = query(collection(db, "manga"), orderBy("createdAt", "desc"), limit(24));
-        onSnapshot(q, snap => {
-            const grid = document.getElementById("mGrid");
-            if(!grid) return; grid.innerHTML = "";
+    async renderHome(el) {
+        el.innerHTML = `<h2 class="text-7xl font-black italic mb-16 uppercase">Library</h2><div id="grid" class="grid grid-cols-2 md:grid-cols-6 gap-10"></div>`;
+        onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc"), limit(24)), snap => {
+            const grid = document.getElementById("grid");
+            if (!grid) return; grid.innerHTML = "";
             snap.forEach(d => {
                 const m = d.data();
-                grid.innerHTML += `
-                    <div onclick="router.go('detail', '${d.id}')" class="m-card">
-                        <img src="${m.thumbnail}" class="w-full h-full object-cover">
-                        <div class="p-6 absolute bottom-0 w-full bg-gradient-to-t from-black">
-                            <p class="text-[11px] font-black uppercase truncate">${m.title}</p>
-                        </div>
-                    </div>`;
+                grid.innerHTML += `<div onclick="router.go('detail', '${d.id}')" class="m-card"><img src="${m.thumbnail}" class="w-full h-full object-cover"></div>`;
             });
         });
     }
 };
 
-// --- [SECTION 5: ADMIN & ANALYTICS ENGINE] ---
-window.admin = {
-    async bulkUpload(mid, json) {
-        const batch = writeBatch(db);
-        JSON.parse(json).forEach(ch => {
-            const ref = doc(collection(db, "manga", mid, "chapters"));
-            batch.set(ref, { ...ch, views: 0, createdAt: serverTimestamp() });
-        });
-        await batch.commit();
-        ui.toast("Bulk Upload Complete", "📦");
-    }
-};
-
-window.perf = {
-    monitor() {
-        requestAnimationFrame(() => {
-            // High-end Performance Monitoring logic
-            this.monitor();
-        });
-    }
-};
-
-// --- [SECTION 6: UI UTILS & FEEDBACK] ---
+// [SECTION 4: UI]
 window.ui = {
     toast(m, i) {
-        const b = document.getElementById("toastBox");
         const t = document.createElement("div");
-        t.className = "glass-box p-6 border-l-4 border-red-500 flex items-center gap-4 view-animate";
-        t.innerHTML = `<span>${i}</span><p class="text-[10px] font-black uppercase">${m}</p>`;
-        b.appendChild(t);
+        t.className = "glass-box p-6 border-l-4 border-red-500 flex items-center gap-4 view-animate shadow-2xl";
+        t.innerHTML = `<span>${i}</span><p class="text-[10px] font-black uppercase tracking-widest">${m}</p>`;
+        document.getElementById("toastBox").appendChild(t);
         setTimeout(() => t.remove(), 4000);
-    },
-    confirm(title, msg, cb) {
-        if (confirm(`${title}\n\n${msg}`)) cb();
     }
 };
 
-// --- [SECTION 7: BOOTSTRAP SYSTEM] ---
+// [SECTION 5: START]
 onAuthStateChanged(auth, u => {
     if (u) {
         onSnapshot(doc(db, "users", u.uid), d => {
             state.user = d.data();
             document.getElementById("userBalance").innerText = state.user.coin;
-            if (state.user.role === 'owner') document.getElementById("adminConsole").style.display = "block";
+            document.getElementById("walletDisplay").classList.remove("hidden");
+            if (state.user.role === 'owner') document.getElementById("adminBtn").classList.remove("hidden");
             router.go('home');
-            perf.monitor();
         });
-    } else {
-        // Login Logic
     }
 });
