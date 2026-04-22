@@ -3,130 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TOM MANGA | Professional Platform</title>
+    <title>TOM MANGA | Professional Reader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #ff2d55; }
-        body { 
-            background: #08080c; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif;
-            background-image: radial-gradient(at 0% 0%, rgba(255, 45, 85, 0.1) 0px, transparent 50%);
-            background-attachment: fixed;
-        }
-        .manga-card { 
-            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 24px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
-        }
-        .manga-card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(255, 45, 85, 0.2); }
+        body { background: #08080c; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(8, 8, 12, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .manga-card { background: rgba(255,255,255,0.02); border-radius: 24px; transition: 0.4s; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .manga-card:hover { transform: translateY(-8px); border-color: var(--accent); }
+        .reader-img { width: 100%; max-width: 850px; margin: 0 auto; display: block; }
         .btn-premium { background: linear-gradient(135deg, #ff2d55 0%, #b3002d 100%); transition: 0.3s; }
-        .reader-img { width: 100%; max-width: 900px; margin: 0 auto; display: block; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #ff2d55; border-radius: 10px; }
-        .glass { background: rgba(8, 8, 12, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-slow { animation: bounce-slow 3s infinite; }
     </style>
 </head>
-<body class="pb-12">
+<body class="pb-20">
 
 <nav class="glass fixed top-0 w-full h-20 flex items-center justify-between px-8 z-[100]">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
         <div class="w-2 h-8 bg-red-600 rounded-full shadow-[0_0_15px_#ff2d55]"></div>
         <h1 class="text-2xl font-black italic tracking-tighter">TOM MANGA</h1>
     </div>
     <div class="flex items-center gap-6">
         <div class="text-right hidden sm:block">
-            <p id="userDisplay" class="text-[10px] font-bold opacity-50 uppercase tracking-widest">GUEST</p>
-            <p id="userCoin" class="text-sm font-black text-yellow-500">💰 0</p>
+            <p id="userDisplay" class="text-[10px] font-bold opacity-50 uppercase">GUEST</p>
+            <p id="userCoin" class="text-sm font-black text-yellow-500 italic">💰 0</p>
         </div>
-        <button id="authBtn" onclick="showAuth()" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black hover:bg-red-600 transition-all uppercase tracking-widest">Login</button>
+        <button id="authBtn" onclick="showAuth()" class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all">Login</button>
     </div>
 </nav>
 
-<div id="authModal" class="fixed inset-0 bg-[#08080c]/98 backdrop-blur-2xl z-[9999] flex items-center justify-center hidden p-6">
-    <div class="w-full max-w-sm text-center">
-        <h2 id="authTitle" class="text-4xl font-black mb-8 italic uppercase tracking-tighter">Login</h2>
-        <div class="space-y-4">
-            <input id="uName" type="text" placeholder="Username" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none focus:border-red-600 text-center font-bold">
-            <input id="password" type="password" placeholder="Password" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none focus:border-red-600 text-center font-bold">
-            <button id="mainAuthBtn" onclick="handleAuth()" class="w-full btn-premium py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl">Start Journey</button>
-            <p id="toggleText" onclick="toggleAuthMode()" class="text-zinc-500 text-xs cursor-pointer hover:text-white uppercase font-bold tracking-widest">New here? Register</p>
-            <p onclick="showAuth()" class="text-zinc-700 text-[10px] cursor-pointer mt-4 font-black uppercase">Close</p>
+<div id="continueReading" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
+    <div onclick="resumeReading()" class="bg-gradient-to-r from-red-600 to-red-800 p-4 rounded-2xl shadow-2xl cursor-pointer flex items-center justify-between border border-white/20 animate-bounce-slow">
+        <div class="flex items-center gap-3">
+            <span class="text-xl">📖</span>
+            <div class="text-left">
+                <p class="text-[8px] font-black opacity-70 uppercase">ဖတ်လက်စပြန်ဆက်ရန်</p>
+                <p id="lastReadInfo" class="text-xs font-bold truncate w-48 italic">Loading...</p>
+            </div>
         </div>
+        <span class="text-xl">➜</span>
     </div>
 </div>
 
 <main class="mt-32 px-6 max-w-7xl mx-auto">
-    <div id="mangaGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-        </div>
+    <div id="mangaGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8"></div>
 </main>
 
 <div id="mangaDetail" class="fixed inset-0 bg-[#08080c] z-[500] hidden overflow-y-auto">
-    <div class="sticky top-0 glass p-6 z-10 flex justify-between items-center">
-        <button onclick="closeDetail()" class="text-red-500 font-black text-[10px] tracking-widest">← EXPLORE</button>
+    <div class="sticky top-0 glass p-6 z-10 flex justify-between">
+        <button onclick="closeDetail()" class="text-red-500 font-black text-[10px] tracking-widest uppercase">← Explore</button>
         <span id="detailTitle" class="font-black text-xs uppercase opacity-40"></span>
-        <span class="w-10"></span>
+        <div class="w-10"></div>
     </div>
     <div id="detailContent" class="max-w-4xl mx-auto p-8 pt-12"></div>
 </div>
 
-<div id="readerView" class="fixed inset-0 bg-black z-[1000] hidden overflow-y-auto">
-    <div class="fixed top-0 w-full p-4 glass flex justify-between items-center z-[1001]">
-        <button onclick="closeReader()" class="text-[10px] font-black text-red-500 uppercase tracking-widest">Close Reader</button>
-        <span id="readerTitle" class="text-[10px] font-bold opacity-50 uppercase tracking-widest"></span>
-        <div class="w-4 h-4 bg-red-600 animate-pulse rounded-full"></div>
+<div id="readerView" class="fixed inset-0 bg-black z-[1100] hidden overflow-y-auto">
+    <div class="fixed top-0 w-full p-4 glass flex justify-between items-center z-[1101]">
+        <button onclick="closeReader()" class="text-[10px] font-black text-red-500 uppercase">Close Reader</button>
+        <span id="readerTitle" class="text-[10px] font-bold opacity-50"></span>
+        <div class="w-2 h-2 bg-red-600 rounded-full"></div>
     </div>
-    <div id="readerImages" class="pt-24 space-y-0"></div>
+    <div id="readerImages" class="pt-24"></div>
 </div>
 
-<div id="adminPanel" class="hidden fixed bottom-6 right-6 w-80 bg-zinc-900 border border-red-600/30 p-6 rounded-[32px] z-[400] shadow-2xl">
-    <h2 class="font-black text-red-500 mb-4 italic tracking-widest text-xs">OWNER CONTROL</h2>
-    <div class="space-y-3">
-        <input id="mTitle" placeholder="Manga Title" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 text-[10px] font-bold">
-        <input id="mThumb" placeholder="Thumbnail URL" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 text-[10px] font-bold">
-        <button onclick="adminAddManga()" class="w-full btn-premium py-3 rounded-xl font-black text-[10px] tracking-widest">CREATE MANGA</button>
+<div id="adminPanel" class="hidden fixed bottom-6 right-6 w-80 bg-zinc-900 border border-red-600/30 p-6 rounded-[32px] z-[400] shadow-2xl overflow-y-auto max-h-[70vh]">
+    <h2 class="font-black text-red-500 mb-4 italic text-xs tracking-widest">OWNER PANEL</h2>
+    <div class="space-y-3 text-[10px] font-bold">
+        <input id="mTitle" placeholder="Manga Title" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 outline-none">
+        <input id="mThumb" placeholder="Thumbnail URL" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 outline-none">
+        <textarea id="mDesc" placeholder="Description (ဇာတ်လမ်းအကျဉ်း)" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 outline-none h-20"></textarea>
+        <button onclick="adminAddManga()" class="w-full btn-premium py-3 rounded-xl font-black uppercase">Create Manga</button>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p class="text-yellow-500 mb-2 uppercase italic tracking-widest">User Management</p>
+            <input id="targetUser" placeholder="Username" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mb-2">
+            <input id="addAmount" type="number" placeholder="Coins" class="w-full bg-black/50 p-3 rounded-xl border border-white/10 mb-2">
+            <button onclick="adminAction('coin')" class="w-full bg-blue-600 py-2 rounded-lg font-black mb-2 uppercase">Add Coins</button>
+            <button onclick="adminAction('premium')" class="w-full bg-yellow-600 py-2 rounded-lg font-black uppercase">Give 1 Month Premium</button>
+        </div>
+    </div>
+</div>
+
+<div id="authModal" class="fixed inset-0 bg-[#08080c]/98 backdrop-blur-2xl z-[9999] flex items-center justify-center hidden p-6 text-center">
+    <div class="w-full max-w-sm">
+        <h2 id="authTitle" class="text-4xl font-black mb-8 uppercase italic tracking-tighter">Login</h2>
+        <input id="uName" placeholder="Username" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none mb-4 text-center font-bold">
+        <input id="password" type="password" placeholder="Password" class="w-full bg-white/5 p-5 rounded-2xl border border-white/10 outline-none mb-6 text-center font-bold">
+        <button onclick="handleAuth()" id="mainAuthBtn" class="w-full btn-premium py-5 rounded-2xl font-black uppercase tracking-widest mb-4">Start Journey</button>
+        <p onclick="toggleAuthMode()" id="toggleText" class="text-zinc-500 text-xs cursor-pointer uppercase font-bold hover:text-white">New here? Register</p>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, setDoc, getDoc, getDocs, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, setDoc, getDoc, getDocs, serverTimestamp, runTransaction, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const config = { 
-        apiKey: "YOUR_API_KEY", 
-        authDomain: "YOUR_PROJECT.firebaseapp.com", 
-        projectId: "YOUR_PROJECT" 
-    };
-
+    const config = { apiKey: "AIza...", authDomain: "...", projectId: "..." }; // မင်းရဲ့ config ထည့်ပါ
     const app = initializeApp(config);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
     let userData = null;
-    let isRegisterMode = false;
+    let isReg = false;
 
-    // --- AUTH LOGIC ---
+    // --- AUTH ---
     window.showAuth = () => document.getElementById("authModal").classList.toggle("hidden");
-    window.toggleAuthMode = () => {
-        isRegisterMode = !isRegisterMode;
-        document.getElementById("authTitle").innerText = isRegisterMode ? "REGISTER" : "LOGIN";
-        document.getElementById("mainAuthBtn").innerText = isRegisterMode ? "Create Account" : "Start Journey";
-    };
-
+    window.toggleAuthMode = () => { isReg = !isReg; document.getElementById("authTitle").innerText = isReg ? "REGISTER" : "LOGIN"; };
+    
     window.handleAuth = async () => {
         const u = document.getElementById("uName").value.trim().toLowerCase();
         const p = document.getElementById("password").value;
-        if(!u || !p) return alert("Fields are required");
         const email = `${u}@tommanga.com`;
-
         try {
-            if(isRegisterMode) {
-                const res = await createUserWithEmailAndPassword(auth, email, p);
-                await setDoc(doc(db, "users", res.user.uid), { username: u, coin: 50, role: "member" });
+            if(isReg) {
+                const r = await createUserWithEmailAndPassword(auth, email, p);
+                await setDoc(doc(db, "users", r.user.uid), { username: u, coin: 0, role: "member", unlockedChapters: {} });
+                await setDoc(doc(db, "users_by_name", u), { uid: r.user.uid });
                 location.reload();
-            } else {
-                await signInWithEmailAndPassword(auth, email, p);
-                showAuth();
-            }
+            } else { await signInWithEmailAndPassword(auth, email, p); showAuth(); }
         } catch(e) { alert(e.message); }
     };
 
@@ -137,22 +135,24 @@
                 document.getElementById("userDisplay").innerText = userData.username;
                 document.getElementById("userCoin").innerText = "💰 " + userData.coin;
                 if(userData.role === 'admin') document.getElementById("adminPanel").classList.remove("hidden");
+                if(userData.lastRead) {
+                    document.getElementById("continueReading").classList.remove("hidden");
+                    document.getElementById("lastReadInfo").innerText = `${userData.lastRead.mTitle} - ${userData.lastRead.cTitle}`;
+                }
             });
             document.getElementById("authBtn").innerText = "LOGOUT";
             document.getElementById("authBtn").onclick = () => auth.signOut().then(()=>location.reload());
         }
     });
 
-    // --- MANGA CORE ---
+    // --- MANGA SYSTEM ---
     onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc")), (snap) => {
-        const grid = document.getElementById("mangaGrid");
-        grid.innerHTML = snap.docs.map(doc => {
-            const m = doc.data();
-            return `
-                <div class="manga-card group cursor-pointer" onclick="viewDetail('${doc.id}')">
-                    <img src="${m.thumbnail}" class="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110">
-                    <div class="p-4"><h4 class="font-black text-[10px] uppercase truncate">${m.title}</h4></div>
-                </div>`;
+        document.getElementById("mangaGrid").innerHTML = snap.docs.map(d => {
+            const m = d.data();
+            return `<div class="manga-card group cursor-pointer" onclick="viewDetail('${d.id}')">
+                <img src="${m.thumbnail}" class="w-full aspect-[3/4] object-cover transition-transform group-hover:scale-105">
+                <div class="p-4"><h4 class="font-black text-[10px] uppercase truncate">${m.title}</h4></div>
+            </div>`;
         }).join('');
     });
 
@@ -160,27 +160,30 @@
         const m = (await getDoc(doc(db, "manga", id))).data();
         document.getElementById("mangaDetail").classList.remove("hidden");
         document.getElementById("detailTitle").innerText = m.title;
-        
         const content = document.getElementById("detailContent");
         content.innerHTML = `
             <div class="flex flex-col md:flex-row gap-10 mb-12">
-                <img src="${m.thumbnail}" class="w-56 rounded-[40px] shadow-2xl">
+                <img src="${m.thumbnail}" class="w-56 rounded-[40px] shadow-2xl border border-white/10">
                 <div class="flex-1">
-                    <h2 class="text-5xl font-black mb-4 italic tracking-tighter uppercase">${m.title}</h2>
-                    <p class="text-zinc-500 text-sm mb-8 leading-relaxed">သင်နှစ်သက်မည့် အကောင်းဆုံး Manga ဇာတ်လမ်းများကို တစ်နေရာတည်းတွင် ဖတ်ရှုလိုက်ပါ။</p>
-                    ${userData?.role === 'admin' ? `<button onclick="addChapterUI('${id}')" class="bg-red-600 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest">Add Chapter +</button>` : ''}
+                    <h2 class="text-5xl font-black mb-4 uppercase italic tracking-tighter">${m.title}</h2>
+                    <p class="text-zinc-500 text-sm mb-6 leading-relaxed">${m.description || 'No description available.'}</p>
+                    ${userData?.role === 'admin' ? `<button onclick="addChapUI('${id}')" class="bg-red-600 px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Add Chapter +</button>` : ''}
                 </div>
             </div>
-            <div id="chapList" class="grid gap-4"></div>
-        `;
+            <div id="chapList" class="grid gap-4 pt-10 border-t border-white/5"></div>`;
 
         const chaps = await getDocs(query(collection(db, "manga", id, "chapters"), orderBy("createdAt", "asc")));
-        const list = document.getElementById("chapList");
         chaps.forEach(cDoc => {
             const c = cDoc.data();
-            list.innerHTML += `
-                <div onclick="unlockChapter('${id}','${cDoc.id}',${c.price})" class="bg-white/5 p-6 rounded-[28px] border border-white/5 flex justify-between items-center hover:border-red-600 transition-all cursor-pointer group">
-                    <span class="font-bold text-sm tracking-wide uppercase group-hover:text-red-500">${c.title}</span>
+            const pDate = userData?.unlockedChapters?.[cDoc.id]?.toDate();
+            const isExp = pDate && (new Date() - pDate > 90*24*60*60*1000);
+            
+            document.getElementById("chapList").innerHTML += `
+                <div onclick="unlockChapter('${id}','${cDoc.id}',${c.price})" class="bg-white/5 p-6 rounded-[28px] border border-white/5 flex justify-between items-center hover:border-red-600 cursor-pointer group">
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-sm uppercase group-hover:text-red-500 transition-colors">${c.title}</span>
+                        ${pDate ? (isExp ? '<span class="text-[8px] text-red-500 font-black italic uppercase">[Expired]</span>' : '<span class="text-[8px] text-green-500 font-black italic uppercase">[Rented]</span>') : ''}
+                    </div>
                     <span class="font-black text-xs ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'}">${c.price > 0 ? '💰 ' + c.price : 'FREE'}</span>
                 </div>`;
         });
@@ -188,26 +191,41 @@
 
     window.unlockChapter = async (mId, cId, price) => {
         if(price === 0) return openReader(mId, cId);
-        if(!userData || userData.coin < price) return alert("Coin မလောက်ပါ");
-
-        if(confirm(`ဒီ Chapter ကို ${price} coin နဲ့ ဝယ်ဖတ်မှာလား?`)) {
-            try {
+        const now = new Date();
+        const isPremium = userData.isPremium && userData.expiryDate.toDate() > now;
+        
+        if(!isPremium) {
+            const pDate = userData.unlockedChapters?.[cId]?.toDate();
+            const isExp = pDate && (now - pDate > 90*24*60*60*1000);
+            
+            if(!pDate || isExp) {
+                if(userData.coin < price) return alert("Coin မလောက်ပါ။");
+                if(!confirm(`၃ လစာ ငှားရမ်းရန် ${price} coin သုံးမလား?`)) return;
                 await runTransaction(db, async (t) => {
                     const uRef = doc(db, "users", auth.currentUser.uid);
-                    t.update(uRef, { coin: userData.coin - price });
+                    const unlocked = (await t.get(uRef)).data().unlockedChapters || {};
+                    unlocked[cId] = serverTimestamp();
+                    t.update(uRef, { coin: userData.coin - price, unlockedChapters: unlocked });
                 });
-                openReader(mId, cId);
-            } catch(e) { alert("ဝယ်ယူမှု မအောင်မြင်ပါ"); }
+            }
         }
+        openReader(mId, cId);
     };
 
     window.openReader = async (mId, cId) => {
         const c = (await getDoc(doc(db, "manga", mId, "chapters", cId))).data();
         document.getElementById("readerTitle").innerText = c.title;
-        document.getElementById("readerImages").innerHTML = c.pages.map(u => `<img src="${u.trim()}" class="reader-img" loading="lazy">`).join('');
+        document.getElementById("readerImages").innerHTML = c.pages.map(u => `<img src="${u}" class="reader-img" loading="lazy">`).join('');
         document.getElementById("readerView").style.display = "block";
+        // Auto-Save
+        if(auth.currentUser) {
+            updateDoc(doc(db, "users", auth.currentUser.uid), {
+                lastRead: { mId, cId, mTitle: document.getElementById("detailTitle").innerText, cTitle: c.title }
+            });
+        }
     };
 
+    window.resumeReading = () => { if(userData.lastRead) openReader(userData.lastRead.mId, userData.lastRead.cId); };
     window.closeDetail = () => document.getElementById("mangaDetail").classList.add("hidden");
     window.closeReader = () => document.getElementById("readerView").style.display = "none";
 
@@ -215,20 +233,41 @@
     window.adminAddManga = async () => {
         const title = document.getElementById("mTitle").value;
         const thumbnail = document.getElementById("mThumb").value;
-        if(!title || !thumbnail) return;
-        await addDoc(collection(db, "manga"), { title, thumbnail, createdAt: serverTimestamp() });
+        const description = document.getElementById("mDesc").value;
+        if(!title || !thumbnail) return alert("Fill fields");
+        await addDoc(collection(db, "manga"), { title, thumbnail, description, createdAt: serverTimestamp() });
         alert("Created!");
     };
 
-    window.addChapterUI = async (mId) => {
-        const t = prompt("Chapter Name");
-        const p = parseInt(prompt("Price (0 for free)")) || 0;
-        const urls = prompt("Image URLs (Comma separated)");
-        if(!t || !urls) return;
+    window.addChapUI = async (mId) => {
+        const t = prompt("Chapter Title");
+        const p = parseInt(prompt("Price")) || 0;
+        const u = prompt("URLs (Comma separated)");
+        if(!t || !u) return;
         await addDoc(collection(db, "manga", mId, "chapters"), {
-            title: t, price: p, pages: urls.split(",").map(i => i.trim()), createdAt: serverTimestamp()
+            title: t, price: p, pages: u.split(",").map(i => i.trim()), createdAt: serverTimestamp()
         });
         viewDetail(mId);
+    };
+
+    window.adminAction = async (type) => {
+        const u = document.getElementById("targetUser").value.trim().toLowerCase();
+        const nSnap = await getDoc(doc(db, "users_by_name", u));
+        if(!nSnap.exists()) return alert("User not found");
+        const uid = nSnap.data().uid;
+        if(type === 'coin') {
+            const amt = parseInt(document.getElementById("addAmount").value);
+            await runTransaction(db, async (t) => {
+                const uRef = doc(db, "users", uid);
+                const cur = (await t.get(uRef)).data().coin || 0;
+                t.update(uRef, { coin: cur + amt });
+            });
+            alert("Added!");
+        } else {
+            const exp = new Date(); exp.setMonth(exp.getMonth() + 1);
+            await updateDoc(doc(db, "users", uid), { isPremium: true, expiryDate: exp });
+            alert("Premium Updated!");
+        }
     };
 </script>
 </body>
