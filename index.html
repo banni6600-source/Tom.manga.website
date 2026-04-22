@@ -4,10 +4,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{background:#0b0b0b;color:white;font-family:sans-serif;text-align:center}
+
 #loginBtn{position:fixed;top:10px;right:10px;background:red;color:white;border:none;padding:8px}
 #loginBox{display:none;position:fixed;top:50px;right:10px;background:#111;padding:15px;border-radius:10px}
+
 .chapter{background:#1a1a1a;margin:15px;padding:15px;border-radius:10px}
 button{margin:5px;padding:8px 12px;border:none;border-radius:6px;background:#e11d48;color:white}
+
 #adminPanel{display:none;background:#111;padding:15px;margin:15px}
 </style>
 </head>
@@ -42,7 +45,7 @@ button{margin:5px;padding:8px 12px;border:none;border-radius:6px;background:#e11
 <button onclick="vipOnly()">VIP Only</button>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 <div id="adminPanel">
 <h2>🛠 Admin Panel</h2>
 <input id="targetUID" placeholder="User UID"><br><br>
@@ -58,61 +61,62 @@ from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-const app = initializeApp({
- apiKey:"AIzaSyCoGazgNsEEK70iMVWzUyWRSZJWZxAZ_g8",
- authDomain:"mang-9c8b4.firebaseapp.com",
- projectId:"mang-9c8b4"
-});
+const firebaseConfig = {
+ apiKey:"AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k",
+ authDomain:"tommangasite.firebaseapp.com",
+ projectId:"tommangasite"
+};
 
-const auth = getAuth();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore();
 
 let currentUser=null;
 
-// 🔥 CHANGE THIS TO YOUR EMAIL
-const adminEmail = "Yati2009@email.com";
+// ADMIN EMAIL (change this)
+const adminEmail="your@email.com";
 
-// login box toggle
+// LOGIN BOX
 loginBtn.onclick=()=>loginBox.style.display=
 loginBox.style.display=="block"?"none":"block";
 
-// register
+// REGISTER
 reg.onclick=async ()=>{
  let u=await createUserWithEmailAndPassword(auth,email.value,password.value);
+
  await setDoc(doc(db,"users",u.user.uid),{
-   coin:100,
-   vip:false,
-   unlocked:[]
+  coin:100,
+  vip:false,
+  unlocked:[]
  });
+
  alert("Account created");
 };
 
-// login
+// LOGIN
 log.onclick=async ()=>{
  let u=await signInWithEmailAndPassword(auth,email.value,password.value);
  currentUser=u.user;
 
  loadUser();
 
- // admin check
- if(u.user.email === adminEmail){
-   adminPanel.style.display="block";
+ if(u.user.email===adminEmail){
+  adminPanel.style.display="block";
  }
 };
 
-// load coin
+// LOAD COIN
 async function loadUser(){
  let d=await getDoc(doc(db,"users",currentUser.uid));
- let data=d.data();
- coin.innerText="Coins: "+data.coin;
+ coin.innerText="Coins: "+d.data().coin;
 }
 
-// open chapter
+// OPEN CHAPTER
 window.openChapter=function(id){
  alert("Opening Chapter "+id+" 📖");
 };
 
-// unlock
+// UNLOCK
 window.unlock=async function(id,price){
  if(!currentUser){alert("Login first");return;}
 
@@ -121,52 +125,47 @@ window.unlock=async function(id,price){
  let data=d.data();
 
  if(data.unlocked.includes(id)){
-   openChapter(id);
-   return;
+  openChapter(id);
+  return;
  }
 
  if(data.coin<price){
-   alert("Not enough coin");
-   return;
+  alert("Not enough coin ❌");
+  return;
  }
 
  await updateDoc(ref,{
-   coin:data.coin-price,
-   unlocked:[...data.unlocked,id]
+  coin:data.coin-price,
+  unlocked:[...data.unlocked,id]
  });
 
- alert("Unlocked 🔓");
  loadUser();
  openChapter(id);
 };
 
 // VIP
 window.vipOnly=async function(){
- if(!currentUser){alert("Login first");return;}
-
  let d=await getDoc(doc(db,"users",currentUser.uid));
  if(!d.data().vip){
-   alert("VIP only 🔒");
-   return;
+  alert("VIP only 🔒");
+  return;
  }
-
  openChapter("VIP");
 };
 
 // ADMIN
 window.setCoin=async function(){
- let uid=targetUID.value;
- let coin=parseInt(newCoin.value);
-
- await updateDoc(doc(db,"users",uid),{coin:coin});
- alert("Coin updated 💰");
+ await updateDoc(doc(db,"users",targetUID.value),{
+  coin:parseInt(newCoin.value)
+ });
+ alert("Coin updated");
 };
 
 window.giveVIP=async function(){
- let uid=targetUID.value;
-
- await updateDoc(doc(db,"users",uid),{vip:true});
- alert("VIP granted 👑");
+ await updateDoc(doc(db,"users",targetUID.value),{
+  vip:true
+ });
+ alert("VIP granted");
 };
 </script>
 
