@@ -1,77 +1,173 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manga Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{background:#0b0b0b;color:white;font-family:sans-serif;text-align:center}
+#loginBtn{position:fixed;top:10px;right:10px;background:red;color:white;border:none;padding:8px}
+#loginBox{display:none;position:fixed;top:50px;right:10px;background:#111;padding:15px;border-radius:10px}
+.chapter{background:#1a1a1a;margin:15px;padding:15px;border-radius:10px}
+button{margin:5px;padding:8px 12px;border:none;border-radius:6px;background:#e11d48;color:white}
+#adminPanel{display:none;background:#111;padding:15px;margin:15px}
+</style>
 </head>
 
-<body style="background:black;color:white;text-align:center;">
+<body>
 
-<h2>Login</h2>
+<button id="loginBtn">Login</button>
 
+<div id="loginBox">
 <input id="email" placeholder="Email"><br><br>
 <input id="password" type="password" placeholder="Password"><br><br>
+<button id="reg">Register</button>
+<button id="log">Login</button>
+</div>
 
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
+<h2 id="coin">Coins: 0</h2>
 
-<div id="coinBox" style="display:none;">
-  <h3>Coins: <span id="coin">0</span></h3>
+<h2>📖 Chapters</h2>
+
+<div class="chapter">
+<h3>Chapter 1 (Free)</h3>
+<button onclick="openChapter(1)">Read</button>
+</div>
+
+<div class="chapter">
+<h3>Chapter 2 (5 coin)</h3>
+<button onclick="unlock(2,5)">Unlock & Read</button>
+</div>
+
+<div class="chapter">
+<h3>VIP Chapter 🔒</h3>
+<button onclick="vipOnly()">VIP Only</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+<h2>🛠 Admin Panel</h2>
+<input id="targetUID" placeholder="User UID"><br><br>
+<input id="newCoin" placeholder="Set Coin"><br><br>
+<button onclick="setCoin()">Set Coin</button>
+<button onclick="giveVIP()">Give VIP</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } 
+import { getFirestore, doc, setDoc, getDoc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCoGazgNsEEK70iMVWzUyWRSZJWZxAZ_g8",
-  authDomain: "mang-9c8b4.firebaseapp.com",
-  projectId: "mang-9c8b4",
-};
+const app = initializeApp({
+ apiKey:"AIzaSyCoGazgNsEEK70iMVWzUyWRSZJWZxAZ_g8",
+ authDomain:"mang-9c8b4.firebaseapp.com",
+ projectId:"mang-9c8b4"
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore();
 
-// REGISTER
-window.register = async function(){
-  try{
-    let email = document.getElementById("email").value;
-    let pass = document.getElementById("password").value;
+let currentUser=null;
 
-    const user = await createUserWithEmailAndPassword(auth, email, pass);
+// 🔥 CHANGE THIS TO YOUR EMAIL
+const adminEmail = "Yati2009@email.com";
 
-    await setDoc(doc(db, "users", user.user.uid), {
-      coin: 100
-    });
+// login box toggle
+loginBtn.onclick=()=>loginBox.style.display=
+loginBox.style.display=="block"?"none":"block";
 
-    alert("Account created!");
-  }catch(e){
-    alert(e.message);
-  }
+// register
+reg.onclick=async ()=>{
+ let u=await createUserWithEmailAndPassword(auth,email.value,password.value);
+ await setDoc(doc(db,"users",u.user.uid),{
+   coin:100,
+   vip:false,
+   unlocked:[]
+ });
+ alert("Account created");
+};
+
+// login
+log.onclick=async ()=>{
+ let u=await signInWithEmailAndPassword(auth,email.value,password.value);
+ currentUser=u.user;
+
+ loadUser();
+
+ // admin check
+ if(u.user.email === adminEmail){
+   adminPanel.style.display="block";
+ }
+};
+
+// load coin
+async function loadUser(){
+ let d=await getDoc(doc(db,"users",currentUser.uid));
+ let data=d.data();
+ coin.innerText="Coins: "+data.coin;
 }
 
-// LOGIN
-window.login = async function(){
-  try{
-    let email = document.getElementById("email").value;
-    let pass = document.getElementById("password").value;
+// open chapter
+window.openChapter=function(id){
+ alert("Opening Chapter "+id+" 📖");
+};
 
-    const user = await signInWithEmailAndPassword(auth, email, pass);
+// unlock
+window.unlock=async function(id,price){
+ if(!currentUser){alert("Login first");return;}
 
-    const data = await getDoc(doc(db, "users", user.user.uid));
+ let ref=doc(db,"users",currentUser.uid);
+ let d=await getDoc(ref);
+ let data=d.data();
 
-    document.getElementById("coin").innerText = data.data().coin;
-    document.getElementById("coinBox").style.display = "block";
+ if(data.unlocked.includes(id)){
+   openChapter(id);
+   return;
+ }
 
-    alert("Login success!");
-  }catch(e){
-    alert(e.message);
-  }
-}
+ if(data.coin<price){
+   alert("Not enough coin");
+   return;
+ }
+
+ await updateDoc(ref,{
+   coin:data.coin-price,
+   unlocked:[...data.unlocked,id]
+ });
+
+ alert("Unlocked 🔓");
+ loadUser();
+ openChapter(id);
+};
+
+// VIP
+window.vipOnly=async function(){
+ if(!currentUser){alert("Login first");return;}
+
+ let d=await getDoc(doc(db,"users",currentUser.uid));
+ if(!d.data().vip){
+   alert("VIP only 🔒");
+   return;
+ }
+
+ openChapter("VIP");
+};
+
+// ADMIN
+window.setCoin=async function(){
+ let uid=targetUID.value;
+ let coin=parseInt(newCoin.value);
+
+ await updateDoc(doc(db,"users",uid),{coin:coin});
+ alert("Coin updated 💰");
+};
+
+window.giveVIP=async function(){
+ let uid=targetUID.value;
+
+ await updateDoc(doc(db,"users",uid),{vip:true});
+ alert("VIP granted 👑");
+};
 </script>
 
 </body>
