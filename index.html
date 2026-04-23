@@ -3,247 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TOM MANGA CLEAN</title>
+<title>TOM MANGA ULTRA+</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-black text-white">
 
-<h1 class="text-center text-3xl mt-5 font-bold">🔥 TOM MANGA</h1>
+<!-- HEADER -->
+<div class="flex justify-between p-4 bg-zinc-900">
+<h1 class="text-xl font-bold">🔥 TOM MANGA</h1>
+<div>
+<span id="coin">💰 0</span>
+<button onclick="logout()" class="ml-3 bg-red-500 px-2">Logout</button>
+</div>
+</div>
 
 <!-- AUTH -->
 <div id="authBox" class="text-center mt-10">
-<input id="username" placeholder="Username" class="p-3 text-black rounded"><br><br>
-<input id="password" type="password" placeholder="Password" class="p-3 text-black rounded"><br><br>
-
-<button onclick="register()" class="bg-green-500 px-6 py-2 rounded">Register</button>
-<button onclick="login()" class="bg-blue-500 px-6 py-2 rounded">Login</button>
+<input id="username" placeholder="Username" class="p-2 text-black"><br><br>
+<input id="password" type="password" placeholder="Password" class="p-2 text-black"><br><br>
+<button onclick="register()" class="bg-green-500 px-4 py-2">Register</button>
+<button onclick="login()" class="bg-blue-500 px-4 py-2">Login</button>
 </div>
 
 <!-- APP -->
-<div id="app" class="hidden p-5">
+<div id="app" class="hidden p-4">
 
-<p id="coin">💰 0</p>
-
-<button onclick="showProfile()" class="bg-blue-500 px-3 py-1 mt-3">Profile</button>
-<button onclick="addCoin()" class="bg-yellow-500 px-3 py-1 mt-3">💰 Add Coin (Admin)</button>
-
-<div id="profileBox" class="hidden mt-5 border p-3">
-  <h2>👤 Profile</h2>
-  <p id="pName"></p>
-  <p id="pCoin"></p>
+<div class="flex gap-2 mb-4">
+<button onclick="showProfile()" class="bg-blue-500 px-2">Profile</button>
+<button onclick="showFavorites()" class="bg-pink-500 px-2">Favorites</button>
+<button onclick="addManga()" class="bg-red-500 px-2">Add</button>
 </div>
 
-<button onclick="addManga()" class="bg-red-500 px-4 py-2 mt-3">Add Manga (Admin)</button>
+<div id="profileBox" class="hidden border p-3 mb-3"></div>
+<div id="favBox" class="hidden border p-3 mb-3"></div>
 
-<div id="mangaList" class="mt-5"></div>
+<input id="search" placeholder="Search..." oninput="searchManga()" class="p-2 text-black w-full mb-3">
 
+<div id="mangaList" class="grid grid-cols-2 gap-3"></div>
+
+</div>
+
+<!-- READER -->
+<div id="reader" class="hidden fixed inset-0 bg-black overflow-y-auto z-50">
+<button onclick="closeReader()" class="p-3 bg-red-500">Close</button>
+<div id="readerContent"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k",
-  authDomain: "tommangasite.firebaseapp.com",
-  projectId: "tommangasite"
-};
+const app = initializeApp({
+ apiKey:"AIzaSyDhb5...",
+ authDomain:"tommangasite.firebaseapp.com",
+ projectId:"tommangasite"
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser = null;
-let userData = null;
+let currentUser,userData,allManga=[];
 
-// SAFE CHECK
-function checkUser(){
-  if(!currentUser || !userData){
-    alert("Login first ❗");
-    return false;
-  }
-  return true;
-}
-
-// REGISTER
-window.register = async () => {
-  let u = username.value;
-  let p = password.value;
-
-  const res = await createUserWithEmailAndPassword(auth, u+"@test.com", p);
-
-  await setDoc(doc(db,"users",res.user.uid),{
-    username:u,
-    coin:100,
-    role:"member",
-    favorites:{},
-    purchased:{}
-  });
-
-  alert("Registered ✅");
+// AUTH
+window.register=async()=>{
+ let u=username.value,p=password.value;
+ let r=await createUserWithEmailAndPassword(auth,u+"@app.com",p);
+ await setDoc(doc(db,"users",r.user.uid),{
+  username:u,coin:100,role:"member",favorites:{},purchased:{},lastRead:null
+ });
 };
 
-// LOGIN
-window.login = async () => {
-  let u = username.value;
-  let p = password.value;
-  await signInWithEmailAndPassword(auth, u+"@test.com", p);
+window.login=async()=>{
+ let u=username.value,p=password.value;
+ await signInWithEmailAndPassword(auth,u+"@app.com",p);
 };
 
-// AUTH STATE
-onAuthStateChanged(auth, async (user)=>{
-  if(user){
-    currentUser = user;
+window.logout=async()=>{await signOut(auth);location.reload();};
 
-    authBox.classList.add("hidden");
-    app.classList.remove("hidden");
+onAuthStateChanged(auth,async u=>{
+ if(u){
+  currentUser=u;
+  authBox.classList.add("hidden");
+  app.classList.remove("hidden");
 
-    const ref = doc(db,"users",user.uid);
-    let snap = await getDoc(ref);
+  let ref=doc(db,"users",u.uid);
+  let snap=await getDoc(ref);
+  userData=snap.data();
 
-    if(!snap.exists()){
-      await setDoc(ref,{
-        username:"user",
-        coin:0,
-        favorites:{},
-        purchased:{}
-      });
-      snap = await getDoc(ref);
-    }
-
-    userData = snap.data();
-
-    coin.innerText = "💰 "+(userData.coin || 0);
-
-    loadManga();
-  }
+  coin.innerText="💰 "+userData.coin;
+  loadManga();
+ }
 });
 
-// LOAD MANGA
+// LOAD
 async function loadManga(){
-  const snap = await getDocs(collection(db,"manga"));
-  mangaList.innerHTML="";
-
-  snap.forEach(docu=>{
-    const m = docu.data();
-
-    mangaList.innerHTML += `
-    <div class="border p-3 mt-2">
-      <h3>${m.title}</h3>
-
-      <button onclick="read('${docu.id}',${m.price})" class="bg-yellow-500 px-3 py-1 mt-2">
-        Read (${m.price})
-      </button>
-
-      <button onclick="toggleFav('${docu.id}')" class="bg-pink-500 px-3 py-1 mt-2">
-        ❤️ Favorite
-      </button>
-    </div>
-    `;
-  });
+ let snap=await getDocs(collection(db,"manga"));
+ allManga=[];
+ snap.forEach(d=>{
+  let m=d.data();m.id=d.id;
+  allManga.push(m);
+ });
+ render(allManga);
 }
 
-// READ
-window.read = async (id, price)=>{
-  if(!checkUser()) return;
+// RENDER
+function render(list){
+ mangaList.innerHTML="";
+ list.forEach(m=>{
+  mangaList.innerHTML+=`
+  <div class="border p-2">
+    <img src="${m.thumb||''}" class="w-full h-40 object-cover">
+    <h3>${m.title}</h3>
+    <p class="text-xs">${m.desc||''}</p>
 
-  let bought = userData.purchased || {};
+    <button onclick="openManga('${m.id}')" class="bg-yellow-500 px-2 mt-2">Open</button>
+    <button onclick="fav('${m.id}')" class="bg-pink-500 px-2 mt-2">❤️</button>
+  </div>`;
+ });
+}
 
-  if(bought[id]){
-    alert("Already unlocked 🔓");
-    return;
-  }
-
-  if((userData.coin || 0) < price){
-    alert("Not enough coin");
-    return;
-  }
-
-  userData.coin -= price;
-  bought[id] = true;
-
-  await setDoc(doc(db,"users",currentUser.uid), {
-    ...userData,
-    purchased: bought
-  });
-
-  coin.innerText = "💰 "+userData.coin;
-
-  alert("Unlocked ✅");
+// SEARCH
+window.searchManga=()=>{
+ let q=search.value.toLowerCase();
+ render(allManga.filter(m=>m.title.toLowerCase().includes(q)));
 };
 
 // FAVORITE
-window.toggleFav = async (id)=>{
-  if(!checkUser()) return;
+window.fav=async(id)=>{
+ let f=userData.favorites||{};
+ f[id]?delete f[id]:f[id]=true;
+ await setDoc(doc(db,"users",currentUser.uid),{...userData,favorites:f});
+ userData.favorites=f;
+};
 
-  let fav = userData.favorites || {};
-
-  if(fav[id]){
-    delete fav[id];
-  } else {
-    fav[id] = true;
-  }
-
-  await setDoc(doc(db,"users",currentUser.uid), {
-    ...userData,
-    favorites: fav
-  });
-
-  userData.favorites = fav;
-
-  alert("Favorite Updated ❤️");
+// SHOW FAVORITES
+window.showFavorites=()=>{
+ favBox.classList.toggle("hidden");
+ let list=allManga.filter(m=>userData.favorites?.[m.id]);
+ favBox.innerHTML=list.map(m=>`<p>${m.title}</p>`).join("");
 };
 
 // PROFILE
-window.showProfile = ()=>{
-  profileBox.classList.toggle("hidden");
-
-  pName.innerText = "Name: "+userData.username;
-  pCoin.innerText = "Coins: "+userData.coin;
-};
-
-// ADMIN COIN
-window.addCoin = async ()=>{
-  if(userData.role !== "owner"){
-    alert("Admin only");
-    return;
-  }
-
-  let uid = prompt("User UID?");
-  let amount = parseInt(prompt("Coin amount?"));
-
-  const ref = doc(db,"users",uid);
-  const snap = await getDoc(ref);
-
-  let data = snap.data();
-  data.coin += amount;
-
-  await setDoc(ref,data);
-
-  alert("Coin added 💰");
+window.showProfile=()=>{
+ profileBox.classList.toggle("hidden");
+ profileBox.innerHTML=`
+ <p>User: ${userData.username}</p>
+ <p>Coin: ${userData.coin}</p>
+ `;
 };
 
 // ADD MANGA
-window.addManga = async ()=>{
-  if(userData.role !== "owner"){
-    alert("Not admin");
-    return;
-  }
+window.addManga=async()=>{
+ if(userData.role!=="owner") return alert("Admin only");
 
-  let title = prompt("Title?");
-  let price = prompt("Price?");
+ let t=prompt("Title");
+ let thumb=prompt("Thumbnail URL");
+ let desc=prompt("Description");
 
-  await addDoc(collection(db,"manga"),{
-    title,
-    price: parseInt(price)
-  });
+ let ref=await addDoc(collection(db,"manga"),{
+  title:t,thumb,desc
+ });
 
-  loadManga();
+ // add sample chapter
+ await addDoc(collection(db,"manga",ref.id,"chapters"),{
+  title:"Chapter 1",
+  pages:[
+   "https://via.placeholder.com/600x800",
+   "https://via.placeholder.com/600x800"
+  ],
+  price:5
+ });
+
+ loadManga();
 };
 
-</script>
+// OPEN MANGA
+window.openManga=async(id)=>{
+ let snap=await getDocs(collection(db,"manga",id,"chapters"));
+ let html="<h2>Chapters</h2>";
 
+ snap.forEach(c=>{
+  let d=c.data();
+  html+=`<button onclick="read('${id}','${c.id}',${d.price})">${d.title} (${d.price})</button><br>`;
+ });
+
+ profileBox.innerHTML=html;
+ profileBox.classList.remove("hidden");
+};
+
+// READ
+window.read=async(mid,cid,price)=>{
+ let bought=userData.purchased||{};
+ if(!bought[cid]){
+  if(userData.coin<price) return alert("No coin");
+  userData.coin-=price;
+  bought[cid]=true;
+  await setDoc(doc(db,"users",currentUser.uid),{...userData,purchased:bought});
+ }
+
+ let snap=await getDoc(doc(db,"manga",mid,"chapters",cid));
+ let pages=snap.data().pages;
+
+ readerContent.innerHTML=pages.map(p=>`<img src="${p}" class="w-full">`).join("");
+ reader.classList.remove("hidden");
+
+ userData.lastRead={mid,cid};
+ await setDoc(doc(db,"users",currentUser.uid),userData);
+};
+
+// CLOSE READER
+window.closeReader=()=>{reader.classList.add("hidden");};
+
+</script>
 </body>
 </html>
