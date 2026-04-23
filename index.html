@@ -1,128 +1,320 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOM MANGA | SUPREME EMPIRE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-[#020202] text-white selection:bg-red-500/30 overflow-x-hidden">
-    <nav class="fixed top-0 w-full z-[1000] p-6" id="navbar">
-        <div class="max-w-7xl mx-auto glass-effect px-8 py-5 flex justify-between items-center border border-white/5 rounded-[30px]">
-            <div class="flex items-center gap-4 cursor-pointer" onclick="router.go('home')">
-                <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-blue-700 rounded-2xl flex items-center justify-center font-black shadow-lg">T</div>
-                <h1 class="text-2xl font-black italic uppercase">TOM <span class="text-red-600">MANGA</span></h1>
-            </div>
-            <div class="flex items-center gap-6">
-                <div id="walletDisplay" class="hidden bg-white/5 px-5 py-2 rounded-full border border-yellow-500/20">
-                    <span class="text-yellow-500 font-black">💰 <span id="userBalance">0</span></span>
-                </div>
-                <button id="adminBtn" class="hidden text-[10px] font-black text-red-500 border border-red-500/30 px-4 py-2 rounded-xl" onclick="router.go('admin')">ADMIN</button>
-                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center cursor-pointer" onclick="router.go('profile')">👤</div>
-            </div>
-        </div>
-    </nav>
+<!DOCTYPE html>  <html lang="my">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  
+    <title>TOM MANGA | Pro Version</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">  
+    <style>  
+        :root { --accent: #ff2d55; }  
+        body { background: #08080c; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }  
+        .glass { background: rgba(8, 8, 12, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }  
+        .manga-card { background: rgba(255,255,255,0.02); border-radius: 24px; transition: 0.4s; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }  
+        .manga-card:hover { transform: translateY(-8px); border-color: var(--accent); }  
+        .status-badge { position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; font-size: 8px; font-weight: 900; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; z-index: 10; }  
+        .reader-img { width: 100%; max-width: 100%; margin: 0 auto; display: block; opacity: 0; transition: opacity 0.5s; image-rendering: -webkit-optimize-contrast; }  
+        .animate-fade { animation: fadeIn 0.3s ease-out; }  
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }  
+        .form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px 16px; width: 100%; outline: none; transition: 0.3s; }  
+        .form-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }  
+    </style>  
+</head>  
+<body class="pb-20">  <div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[10000] transition-all duration-500 opacity-0 -translate-y-10 pointer-events-none text-center">  
+    <div class="bg-zinc-900 border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-black uppercase">  
+        <span id="toastIcon"></span><p id="toastMsg"></p>  
+    </div>  
+</div>  <nav class="glass fixed top-0 w-full h-20 flex items-center justify-between px-8 z-[100]">  
+    <div class="flex items-center gap-2">  
+        <div class="w-2 h-8 bg-red-600 rounded-full"></div>  
+        <h1 class="text-2xl font-black italic uppercase tracking-tighter">TOM MANGA</h1>  
+    </div>  
+    <div class="flex items-center gap-4">  
+        <div id="userStats" class="hidden sm:block text-right"><p id="userCoin" class="text-sm font-black text-yellow-500 italic">💰 0</p></div>  
+        <button onclick="toggleMenu()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 border border-white/5 text-xl">⋮</button>  
+        <div id="userDropdown" class="hidden absolute right-8 top-20 w-64 bg-[#0f0f15] border border-white/10 rounded-2xl shadow-2xl z-[110] p-2 text-left animate-fade">  
+            <div id="dropStatus" class="text-[8px] font-black p-3 text-center bg-white/5 rounded-xl mb-2">MEMBER</div>  
+            <div id="adminPanel" class="hidden border border-red-500/20 rounded-xl mb-2 p-2 bg-red-500/5 space-y-2">  
+                <div class="flex items-center justify-between bg-black/40 p-2 rounded-lg border border-white/5">  
+                    <span class="text-[8px] font-black">FREE MODE</span>  
+                    <button id="freeModeBtn" onclick="toggleFreeMode()" class="px-3 py-1 rounded text-[8px] font-black">OFF</button>  
+                </div>  
+                <button onclick="toggleMangaForm()" class="w-full bg-red-600 py-2 rounded text-[8px] font-black uppercase">Post Manga</button>  
+            </div>  
+            <button onclick="buyCoinAction()" class="w-full text-left p-3 text-[10px] font-black uppercase text-yellow-500 hover:bg-white/5 rounded-xl">💰 Buy Coins</button>  
+            <button id="authBtn" onclick="showAuth()" class="w-full text-left p-3 text-[10px] font-black uppercase hover:bg-white/5 rounded-xl">🚪 Login</button>  
+            <button id="logoutBtn" onclick="auth.signOut().then(()=>location.reload())" class="hidden w-full text-left p-3 text-[10px] font-black uppercase text-red-500 hover:bg-red-500/10 rounded-xl">🚪 Sign Out</button>  
+        </div>  
+    </div>  
+</nav>  <main class="mt-32 px-6 max-w-7xl mx-auto space-y-12">  
+    <div id="mangaForm" class="hidden bg-white/5 p-8 rounded-[32px] border border-white/10 space-y-4 animate-fade">  
+        <h3 class="text-xs font-black text-red-500 uppercase tracking-widest">Post New Manga</h3>  
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
+            <input id="mTitle" placeholder="Title" class="form-input">  
+            <input id="mThumb" placeholder="Thumbnail URL" class="form-input">  
+        </div>  
+        <textarea id="mDesc" placeholder="Summary..." class="form-input h-24"></textarea>  
+        <div class="flex gap-4">  
+            <select id="mStatus" class="form-input flex-1">  
+                <option value="ongoing">Ongoing</option>  
+                <option value="completed">Completed</option>  
+            </select>  
+            <button onclick="adminAddManga()" class="bg-red-600 px-8 py-3 rounded-2xl text-xs font-black uppercase flex-1 shadow-lg shadow-red-600/20">Publish</button>  
+        </div>  
+    </div>  <div id="ongoingWrapper" class="hidden space-y-6">  
+    <h2 class="text-xl font-black italic uppercase border-l-4 border-green-500 pl-4">Ongoing</h2>  
+    <div id="ongoingGrid" class="grid grid-cols-2 md:grid-cols-5 gap-6"></div>  
+</div>  
 
-    <main id="app" class="min-h-screen pt-32"></main>
+<div class="space-y-6">  
+    <h2 class="text-xl font-black italic uppercase border-l-4 border-red-600 pl-4">Library</h2>  
+    <div id="mGrid" class="grid grid-cols-2 md:grid-cols-5 gap-6"></div>  
+</div>
 
-    <div id="toastBox" class="fixed bottom-10 right-10 z-[9999] flex flex-col gap-4"></div>
-    
-    <script type="module" src="app.js"></script>
-</body>
-</html>
-:root { --red: #ff2d55; --glass: rgba(255, 255, 255, 0.03); }
-body { font-family: 'Inter', sans-serif; letter-spacing: -0.02em; }
+</main>  <div id="mDetail" class="fixed inset-0 bg-[#08080c] z-[500] hidden overflow-y-auto">  
+    <button onclick="closeDetail()" class="fixed top-6 left-6 z-[510] bg-white/10 w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-xl border border-white/5">←</button>  
+    <div id="detailContent" class="max-w-4xl mx-auto p-8 pt-24 animate-fade"></div>  
+</div>  <div id="reader" class="fixed inset-0 bg-black z-[1100] hidden overflow-y-auto">  
+    <div class="fixed top-0 w-full p-4 glass flex justify-between items-center z-[1101]">  
+        <button onclick="closeReader()" class="text-[10px] font-black text-red-500 uppercase">Close</button>  
+        <span id="rTitle" class="text-[10px] font-bold opacity-50 truncate max-w-[150px]"></span>  
+        <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>  
+    </div>  
+    <div id="rImages" class="pt-20"></div>  
+</div>  <div id="authModal" class="fixed inset-0 bg-[#08080c]/98 z-[9999] flex items-center justify-center hidden p-6 text-center">  
+    <div class="w-full max-w-sm">  
+        <h2 id="authTitle" class="text-4xl font-black mb-8 italic">LOGIN</h2>  
+        <input id="uName" placeholder="Username" class="form-input mb-4 text-center">  
+        <input id="password" type="password" placeholder="Password" class="form-input mb-6 text-center">  
+        <button onclick="handleAuth()" class="w-full bg-red-600 py-5 rounded-2xl font-black uppercase">Confirm</button>  
+        <p onclick="toggleAuthMode()" id="toggleText" class="mt-4 text-zinc-500 text-xs cursor-pointer uppercase font-bold">New Account? Register</p>  
+    </div>  
+</div>  <script type="module">  
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";  
+    import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, setDoc, getDoc, getDocs, serverTimestamp, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
+  
+    const firebaseConfig = {  
+        apiKey: "AIzaSyDhb5iJxVxIdaXjMIGZP6nmI28DGQSR41k",  
+        authDomain: "tommangasite.firebaseapp.com",  
+        projectId: "tommangasite",  
+        storageBucket: "tommangasite.firebasestorage.app",  
+        messagingSenderId: "678188860278",  
+        appId: "1:678188860278:web:75ffe0d7ae003ed71df057"  
+    };  
+  
+    const app = initializeApp(firebaseConfig);  
+    const auth = getAuth(app);  
+    const db = getFirestore(app);  
+  
+    let userData = null; let isReg = false; let isFreeMode = false; let pressTimer;  
+  
+    // --- FREE MODE ---  
+    onSnapshot(doc(db, "settings", "global"), d => {  
+        if(d.exists()) {  
+            isFreeMode = d.data().isFreeMode;  
+            const btn = document.getElementById("freeModeBtn");  
+            btn.innerText = isFreeMode ? "ON" : "OFF";  
+            btn.className = isFreeMode ? "px-3 py-1 rounded bg-green-600 text-[8px] font-black" : "px-3 py-1 rounded bg-zinc-700 text-[8px] font-black";  
+        }  
+    });  
+  
+    window.toggleFreeMode = async () => { await setDoc(doc(db, "settings", "global"), { isFreeMode: !isFreeMode }, { merge: true }); };  
+  
+    // --- AUTH ---  
+    onAuthStateChanged(auth, user => {  
+        if(user) {  
+            onSnapshot(doc(db, "users", user.uid), d => {  
+                userData = d.data();  
+                document.getElementById("userCoin").innerText = "💰 " + (userData.coin || 0);  
+                const st = document.getElementById("dropStatus");  
+                if(userData.role === 'owner') {  
+                    st.innerText = "OWNER"; st.className = "text-[8px] font-black text-red-500 p-3 bg-red-500/10 rounded-xl mb-2";  
+                    document.getElementById("adminPanel").classList.remove("hidden");  
+                } else {  
+                    st.innerText = "MEMBER"; st.className = "text-[8px] font-black text-green-500 p-3 bg-white/5 rounded-xl mb-2";  
+                }  
+            });  
+            document.getElementById("authBtn").classList.add("hidden");  
+            document.getElementById("logoutBtn").classList.remove("hidden");  
+        }  
+    });  
+  
+    // --- MANGA LOADING ---  
+    onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc")), snap => {  
+        const grid = document.getElementById("mGrid");  
+        const onGrid = document.getElementById("ongoingGrid");  
+        const onWrapper = document.getElementById("ongoingWrapper");  
+        grid.innerHTML = ""; onGrid.innerHTML = ""; let hasOngoing = false;  
+  
+        snap.forEach(d => {  
+            const m = d.data();  
+            const card = `<div onclick="viewDetail('${d.id}')" class="manga-card cursor-pointer animate-fade">  
+                ${m.status === 'ongoing' ? '<div class="status-badge">Ongoing</div>' : ''}  
+                <img src="${m.thumbnail}" class="aspect-[3/4] object-cover w-full">  
+                <div class="p-4 text-[10px] font-black uppercase truncate italic">${m.title}</div>  
+            </div>`;  
+            grid.innerHTML += card;  
+            if(m.status === 'ongoing') { onGrid.innerHTML += card; hasOngoing = true; }  
+        });  
+        onWrapper.style.display = hasOngoing ? "block" : "none";  
+    });  
+  
+    // --- DETAIL & EDIT & CHAPTER FORM ---  
+    window.viewDetail = async id => {  
+        const m = (await getDoc(doc(db, "manga", id))).data();  
+        const content = document.getElementById("detailContent");  
+        document.getElementById("mDetail").classList.remove("hidden");  
+        const isOwner = userData?.role === 'owner';  
+          
+        content.innerHTML = `  
+            <div id="detailHeader" class="relative md:flex gap-10 items-start mb-12">  
+                ${isOwner ? `<button onclick="editMangaUI('${id}')" class="absolute -top-4 -right-4 bg-white/10 hover:bg-red-600 w-12 h-12 rounded-full flex items-center justify-center border border-white/10 text-lg shadow-xl z-20 transition-all">✏️</button>` : ''}  
+                <img src="${m.thumbnail}" class="w-48 rounded-[40px] shadow-2xl mx-auto md:mx-0 mb-6 border border-white/5">  
+                <div class="flex-1 text-center md:text-left">  
+                    <div class="flex items-center justify-center md:justify-start gap-3 mb-4">  
+                        <h2 class="text-4xl font-black uppercase italic tracking-tighter">${m.title}</h2>  
+                        <span class="text-[8px] bg-white/10 px-3 py-1 rounded-full uppercase font-bold tracking-widest">${m.status || 'Completed'}</span>  
+                    </div>  
+                    <p class="text-zinc-500 text-sm italic mb-8 leading-relaxed opacity-80">${m.description || 'No summary available.'}</p>  
+                    ${isOwner ? `<button onclick="showChapterForm('${id}')" class="bg-red-600 px-8 py-3 rounded-2xl text-[10px] font-black uppercase">Add Episode +</button>` : ''}  
+                </div>  
+            </div>  
+            <div id="chapterFormBox" class="hidden bg-white/5 p-6 rounded-[32px] border border-white/10 mb-8 space-y-4 animate-fade">  
+                <h3 class="text-[10px] font-black uppercase text-red-500">New Episode</h3>  
+                <div class="grid grid-cols-2 gap-4">  
+                    <input id="cTitle" placeholder="Ep Title (e.g. Ep 01)" class="form-input">  
+                    <input id="cPrice" type="number" placeholder="Price (0 for free)" class="form-input">  
+                </div>  
+                <textarea id="cPages" placeholder="Image URLs (comma separated)" class="form-input h-24"></textarea>  <div class="flex gap-2">  
+                <button onclick="saveNewChapter('${id}')" class="flex-1 bg-red-600 py-3 rounded-xl text-[10px] font-black">SAVE EPISODE</button>  
+                <button onclick="document.getElementById('chapterFormBox').classList.add('hidden')" class="bg-white/10 px-6 rounded-xl text-[10px] font-black">CANCEL</button>  
+            </div>  
+        </div>  
+        <div id="chapList" class="grid gap-3 pt-6 border-t border-white/5"></div>`;  
 
-.glass-effect { background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); }
-.glass-box { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
+    loadChapters(id, isOwner);  
+};  
 
-.m-card { position: relative; border-radius: 28px; overflow: hidden; aspect-ratio: 3/4; cursor: pointer; transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1); border: 1px solid rgba(255,255,255,0.05); }
-.m-card:hover { transform: translateY(-12px) scale(1.02); border-color: var(--red); box-shadow: 0 30px 60px -12px rgba(255, 45, 85, 0.3); }
+const loadChapters = async (mId, isOwner) => {  
+    const chapList = document.getElementById("chapList");  
+    chapList.innerHTML = "";  
+    const chaps = await getDocs(query(collection(db, "manga", mId, "chapters"), orderBy("createdAt", "asc")));  
+    chaps.forEach(cDoc => {  
+        const c = cDoc.data(); const btn = document.createElement("div");  
+        btn.className = "bg-white/5 p-5 rounded-2xl flex justify-between items-center cursor-pointer border border-transparent hover:border-red-600 transition-all select-none";  
+        btn.onmousedown = () => { pressTimer = setTimeout(() => { if(isOwner) deleteChap(mId, cDoc.id); }, 1000); };  
+        btn.onmouseup = () => clearTimeout(pressTimer);  
+        btn.ontouchstart = () => { pressTimer = setTimeout(() => { if(isOwner) deleteChap(mId, cDoc.id); }, 1000); };  
+        btn.ontouchend = () => clearTimeout(pressTimer);  
+        btn.onclick = () => unlockChapter(mId, cDoc.id, c.price);  
+        btn.innerHTML = `<span class="font-bold text-xs uppercase">${c.title}</span>  
+                         <span class="text-[10px] font-black ${c.price > 0 ? 'text-yellow-500' : 'text-green-500'}">${isFreeMode ? 'FREE' : (c.price > 0 ? '💰 ' + c.price : 'FREE')}</span>`;  
+        chapList.appendChild(btn);  
+    });  
+};  
 
-.reader-img { width: 100%; max-width: 800px; margin: 0 auto; display: block; animation: fadeIn 1s ease; }
+window.showChapterForm = (id) => { document.getElementById("chapterFormBox").classList.remove("hidden"); };  
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.view-animate { animation: fadeIn 0.6s cubic-bezier(0.2, 1, 0.3, 1) forwards; }
+window.saveNewChapter = async (id) => {  
+    const title = document.getElementById("cTitle").value;  
+    const price = parseInt(document.getElementById("cPrice").value) || 0;  
+    const pages = document.getElementById("cPages").value;  
+    if(title && pages) {  
+        await addDoc(collection(db, "manga", id, "chapters"), {   
+            title, price, pages: pages.split(",").map(i=>i.trim()), createdAt: serverTimestamp()   
+        });  
+        notify("Episode Added!");  
+        viewDetail(id);  
+    }  
+};  
 
-.input-master { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 18px; outline: none; transition: 0.3s; }
-.input-master:focus { border-color: var(--red); background: rgba(255,255,255,0.08); }
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, getDoc, runTransaction, serverTimestamp, query, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+window.editMangaUI = async (id) => {  
+    const m = (await getDoc(doc(db, "manga", id))).data();  
+    const content = document.getElementById("detailContent");  
+    content.innerHTML = `  
+        <div class="bg-white/5 p-8 rounded-[40px] border border-white/10 space-y-6 animate-fade">  
+            <h3 class="text-xl font-black uppercase italic text-red-500">Edit Manga Info</h3>  
+            <div class="space-y-4">  
+                <input id="edT" value="${m.title}" placeholder="Title" class="form-input">  
+                <input id="edL" value="${m.thumbnail}" placeholder="Thumbnail Link" class="form-input">  
+                <textarea id="edD" placeholder="Summary" class="form-input h-32">${m.description || ''}</textarea>  
+                <select id="edS" class="form-input">  
+                    <option value="ongoing" ${m.status === 'ongoing' ? 'selected' : ''}>Ongoing</option>  
+                    <option value="completed" ${m.status === 'completed' ? 'selected' : ''}>Completed</option>  
+                </select>  
+            </div>  
+            <div class="flex gap-3">  
+                <button onclick="saveEdit('${id}')" class="flex-1 bg-red-600 py-4 rounded-2xl font-black uppercase text-xs">Save</button>  
+                <button onclick="viewDetail('${id}')" class="flex-1 bg-white/5 py-4 rounded-2xl font-black uppercase text-[10px]">Cancel</button>  
+            </div>  
+        </div>`;  
+};  
 
-// [SECTION 1: CONFIG]
-const firebaseConfig = { apiKey: "YOUR_API", authDomain: "YOUR_DOMAIN", projectId: "YOUR_ID", storageBucket: "YOUR_BUCKET", messagingSenderId: "YOUR_SENDER", appId: "YOUR_APP" };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+window.saveEdit = async (id) => {  
+    const title = document.getElementById("edT").value;  
+    const thumbnail = document.getElementById("edL").value;  
+    const description = document.getElementById("edD").value;  
+    const status = document.getElementById("edS").value;  
+    if(title && thumbnail) {  
+        await updateDoc(doc(db, "manga", id), { title, thumbnail, description, status });  
+        notify("Manga Updated!", "✏️"); viewDetail(id);  
+    }  
+};  
 
-window.state = { user: null, mangas: [], activeView: 'home' };
+// --- BUY & READ LOGIC ---  
+window.unlockChapter = async (mId, cId, price) => {  
+    if(!userData) return showAuth();  
+    const canWatch = isFreeMode || price === 0 || userData?.role === 'owner' || (userData?.unlockedChapters && userData.unlockedChapters[cId]);  
+    if(canWatch) return openReader(mId, cId);  
+    if(userData.coin < price) return notify("Need more coins!", "⚠️");  
+      
+    if(confirm(`Unlock for ${price} coins?`)) {  
+        try {  
+            await runTransaction(db, async t => {  
+                const uRef = doc(db, "users", auth.currentUser.uid);  
+                const freshUser = (await t.get(uRef)).data();  
+                if(freshUser.coin < price) throw "Insufficient coins";  
+                const current = freshUser.unlockedChapters || {};  
+                current[cId] = true;  
+                t.update(uRef, { coin: freshUser.coin - price, unlockedChapters: current });  
+            });  
+            openReader(mId, cId);  
+        } catch(e) { notify(e, "❌"); }  
+    }  
+};  
 
-// [SECTION 2: CORE MODULES]
-window.core = {
-    wallet: {
-        async buy(mid, cid, price) {
-            if (state.user.coin < price) return ui.toast("Coin မလောက်ဘူး", "⚠️");
-            await runTransaction(db, async (t) => {
-                const uRef = doc(db, "users", auth.currentUser.uid);
-                const unlocked = (await t.get(uRef)).data().unlockedChapters || {};
-                unlocked[cid] = true;
-                t.update(uRef, { coin: increment(-price), unlockedChapters: unlocked });
-            });
-            ui.toast("Unlocked!", "✅");
-            router.go('reader', `${mid}:${cid}`);
-        }
-    }
-};
+window.openReader = async (mId, cId) => {  
+    const c = (await getDoc(doc(db, "manga", mId, "chapters", cId))).data();  
+    document.getElementById("rTitle").innerText = c.title;  
+    document.getElementById("rImages").innerHTML = c.pages.map(u => `<img src="${u}" class="reader-img" onload="this.style.opacity=1" loading="lazy">`).join('');  
+    document.getElementById("reader").classList.remove("hidden");  
+};  
 
-// [SECTION 3: ROUTER]
-window.router = {
-    async go(page, id = null) {
-        const root = document.getElementById("app");
-        root.innerHTML = `<div class="h-screen flex items-center justify-center animate-pulse text-red-500 font-black">SYNCING...</div>`;
-        
-        setTimeout(async () => {
-            root.className = "view-animate mt-10 max-w-7xl mx-auto px-6 pb-20";
-            if (page === 'home') this.renderHome(root);
-            if (page === 'detail') this.renderDetail(root, id);
-            if (page === 'reader') this.renderReader(root, id);
-        }, 400);
-    },
+// --- OTHERS ---  
+window.deleteChap = async (mId, cId) => { if(confirm("Delete episode?")) { await deleteDoc(doc(db, "manga", mId, "chapters", cId)); viewDetail(mId); } };  
+window.adminAddManga = async () => {  
+    const t = document.getElementById("mTitle").value; const l = document.getElementById("mThumb").value;  
+    const s = document.getElementById("mStatus").value;  
+    if(t && l) { await addDoc(collection(db, "manga"), { title: t, thumbnail: l, description: document.getElementById("mDesc").value, status: s, createdAt: serverTimestamp() }); toggleMangaForm(); }  
+};  
+window.notify = (m, i="✅") => { const t = document.getElementById("toast"); document.getElementById("toastMsg").innerText = m; document.getElementById("toastIcon").innerText = i; t.classList.remove("opacity-0", "-translate-y-10"); setTimeout(() => t.classList.add("opacity-0", "-translate-y-10"), 3000); };  
+window.toggleMenu = () => document.getElementById("userDropdown").classList.toggle("hidden");  
+window.toggleMangaForm = () => document.getElementById("mangaForm").classList.toggle("hidden");  
+window.closeDetail = () => document.getElementById("mDetail").classList.add("hidden");  
+window.closeReader = () => { document.getElementById("reader").classList.add("hidden"); document.getElementById("rImages").innerHTML = ""; };  
+window.showAuth = () => document.getElementById("authModal").classList.remove("hidden");  
+window.toggleAuthMode = () => { isReg = !isReg; document.getElementById("authTitle").innerText = isReg ? "REGISTER" : "LOGIN"; };  
+window.handleAuth = async () => {  
+    const u = document.getElementById("uName").value.trim().toLowerCase(); const p = document.getElementById("password").value;  
+    try {  
+        if(isReg) {  
+            const r = await createUserWithEmailAndPassword(auth, `${u}@tommanga.com`, p);  
+            await setDoc(doc(db, "users", r.user.uid), { username: u, coin: 0, role: "member", unlockedChapters: {} }); location.reload();  
+        } else { await signInWithEmailAndPassword(auth, `${u}@tommanga.com`, p); document.getElementById("authModal").classList.add("hidden"); }  
+    } catch(e) { notify("Failed", "❌"); }  
+};  
+window.buyCoinAction = () => { navigator.clipboard.writeText(auth.currentUser?.uid || "GUEST"); notify("ID Copied!"); setTimeout(() => window.open(`https://t.me/gogolover1514`), 1000); };
 
-    async renderHome(el) {
-        el.innerHTML = `<h2 class="text-7xl font-black italic mb-16 uppercase">Library</h2><div id="grid" class="grid grid-cols-2 md:grid-cols-6 gap-10"></div>`;
-        onSnapshot(query(collection(db, "manga"), orderBy("createdAt", "desc"), limit(24)), snap => {
-            const grid = document.getElementById("grid");
-            if (!grid) return; grid.innerHTML = "";
-            snap.forEach(d => {
-                const m = d.data();
-                grid.innerHTML += `<div onclick="router.go('detail', '${d.id}')" class="m-card"><img src="${m.thumbnail}" class="w-full h-full object-cover"></div>`;
-            });
-        });
-    }
-};
-
-// [SECTION 4: UI]
-window.ui = {
-    toast(m, i) {
-        const t = document.createElement("div");
-        t.className = "glass-box p-6 border-l-4 border-red-500 flex items-center gap-4 view-animate shadow-2xl";
-        t.innerHTML = `<span>${i}</span><p class="text-[10px] font-black uppercase tracking-widest">${m}</p>`;
-        document.getElementById("toastBox").appendChild(t);
-        setTimeout(() => t.remove(), 4000);
-    }
-};
-
-// [SECTION 5: START]
-onAuthStateChanged(auth, u => {
-    if (u) {
-        onSnapshot(doc(db, "users", u.uid), d => {
-            state.user = d.data();
-            document.getElementById("userBalance").innerText = state.user.coin;
-            document.getElementById("walletDisplay").classList.remove("hidden");
-            if (state.user.role === 'owner') document.getElementById("adminBtn").classList.remove("hidden");
-            router.go('home');
-        });
-    }
-});
+</script>  
+</body>  
+</html>  
