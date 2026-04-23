@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TOM MANGA PRO</title>
+<title>TOM MANGA CLEAN</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-black text-white">
 
-<h1 class="text-center text-3xl mt-5 font-bold">🔥 TOM MANGA PRO</h1>
+<h1 class="text-center text-3xl mt-5 font-bold">🔥 TOM MANGA</h1>
 
 <!-- AUTH -->
 <div id="authBox" class="text-center mt-10">
@@ -58,6 +58,15 @@ const db = getFirestore(app);
 let currentUser = null;
 let userData = null;
 
+// SAFE CHECK
+function checkUser(){
+  if(!currentUser || !userData){
+    alert("Login first ❗");
+    return false;
+  }
+  return true;
+}
+
 // REGISTER
 window.register = async () => {
   let u = username.value;
@@ -91,10 +100,22 @@ onAuthStateChanged(auth, async (user)=>{
     authBox.classList.add("hidden");
     app.classList.remove("hidden");
 
-    const snap = await getDoc(doc(db,"users",user.uid));
+    const ref = doc(db,"users",user.uid);
+    let snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      await setDoc(ref,{
+        username:"user",
+        coin:0,
+        favorites:{},
+        purchased:{}
+      });
+      snap = await getDoc(ref);
+    }
+
     userData = snap.data();
 
-    coin.innerText = "💰 "+userData.coin;
+    coin.innerText = "💰 "+(userData.coin || 0);
 
     loadManga();
   }
@@ -124,8 +145,10 @@ async function loadManga(){
   });
 }
 
-// READ + PURCHASE
+// READ
 window.read = async (id, price)=>{
+  if(!checkUser()) return;
+
   let bought = userData.purchased || {};
 
   if(bought[id]){
@@ -133,7 +156,7 @@ window.read = async (id, price)=>{
     return;
   }
 
-  if(userData.coin < price){
+  if((userData.coin || 0) < price){
     alert("Not enough coin");
     return;
   }
@@ -141,9 +164,10 @@ window.read = async (id, price)=>{
   userData.coin -= price;
   bought[id] = true;
 
-  userData.purchased = bought;
-
-  await setDoc(doc(db,"users",currentUser.uid), userData);
+  await setDoc(doc(db,"users",currentUser.uid), {
+    ...userData,
+    purchased: bought
+  });
 
   coin.innerText = "💰 "+userData.coin;
 
@@ -152,17 +176,22 @@ window.read = async (id, price)=>{
 
 // FAVORITE
 window.toggleFav = async (id)=>{
+  if(!checkUser()) return;
+
   let fav = userData.favorites || {};
 
   if(fav[id]){
     delete fav[id];
-  }else{
+  } else {
     fav[id] = true;
   }
 
-  userData.favorites = fav;
+  await setDoc(doc(db,"users",currentUser.uid), {
+    ...userData,
+    favorites: fav
+  });
 
-  await setDoc(doc(db,"users",currentUser.uid), userData);
+  userData.favorites = fav;
 
   alert("Favorite Updated ❤️");
 };
@@ -175,7 +204,7 @@ window.showProfile = ()=>{
   pCoin.innerText = "Coins: "+userData.coin;
 };
 
-// ADMIN ADD COIN
+// ADMIN COIN
 window.addCoin = async ()=>{
   if(userData.role !== "owner"){
     alert("Admin only");
