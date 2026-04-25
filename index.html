@@ -3,157 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manga Search - Supabase</title>
+    <title>Manga Catalog - Live Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center p-10">
+<body class="bg-[#0f172a] text-slate-200 min-h-screen p-6">
 
-    <h1 class="text-3xl font-bold mb-8 text-blue-400">Manga Catalog</h1>
+    <div class="max-w-2xl mx-auto flex flex-col items-center">
+        <h1 class="text-4xl font-black mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+            Manga Catalog
+        </h1>
 
-    <div class="relative w-full max-w-md">
-        <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="Search manga (e.g. Solo Farming)..." 
-            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition-all"
-        >
+        <div class="relative w-full overflow-visible">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search manga (e.g. Solo Farming)..." 
+                class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all backdrop-blur-sm"
+            >
 
-        <div id="suggestionBox" class="hidden absolute w-full mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-50">
-            <ul id="suggestionList">
-                </ul>
+            <div id="suggestionBox" class="hidden absolute w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                <ul id="suggestionList"></ul>
+            </div>
         </div>
+
+        <div id="mangaDisplay" class="mt-10 w-full">
+            </div>
     </div>
 
-    <div id="mangaDisplay" class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
-        </div>
-
     <script>
-    // ၁။ Supabase ချိတ်ဆက်မှု (URL နဲ့ Key ကို သေချာစစ်ပါ)
-    const supabaseUrl = 'https://wcjpbkmwkivasitudwcxn.supabase.co';
-    const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjanBia213a2l2YXNpdWR3Y3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTA4NzUsImV4cCI6MjA5MjY4Njg3NX0.b7_4x_E7PwO46MYvjUdbUQUHrQBf9bTBw2IOzkPq0Tc';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    const searchInput = document.getElementById('searchInput');
-    const suggestionBox = document.getElementById('suggestionBox');
-    const suggestionList = document.getElementById('suggestionList');
-    const mangaDisplay = document.getElementById('mangaDisplay');
-
-    // ချိတ်ဆက်မှု ရှိ၊ မရှိ အရင်စမ်းသပ်မည့် Function
-    async function checkDatabase() {
-        const { data, error } = await supabase.from('manga').select('*');
-        if (error) {
-            console.error("Database Error:", error.message);
-            alert("Database ချိတ်လို့မရသေးပါ- " + error.message);
-        } else {
-            console.log("Connected! Data count:", data.length);
-            // ချိတ်ဆက်မှု အောင်မြင်ရင် Console မှာ Data count ပေါ်လာပါမယ်
-        }
-    }
-    checkDatabase(); // Website စဖွင့်တာနဲ့ စစ်ဆေးမယ်
-
-    // ၂။ ရှာဖွေရေး Function
-    async function fetchManga(query) {
-        const { data, error } = await supabase
-            .from('manga')
-            .select('*')
-            .ilike('title', `%${query}%`);
-
-        if (error) return [];
-        return data;
-    }
-
-    // ၃။ Search Event
-    searchInput.addEventListener('input', async (e) => {
-        const value = e.target.value.trim();
-        suggestionList.innerHTML = '';
-
-        if (value.length > 0) {
-            const results = await fetchManga(value);
-            if (results.length > 0) {
-                suggestionBox.classList.remove('hidden');
-                results.forEach(manga => {
-                    const li = document.createElement('li');
-                    li.className = "px-4 py-3 hover:bg-slate-700 cursor-pointer flex items-center gap-3 border-b border-slate-700 last:border-0";
-                    li.innerHTML = `
-                        <img src="${manga.cover_url}" class="w-10 h-12 object-cover rounded">
-                        <div>
-                            <p class="font-bold text-white">${manga.title}</p>
-                            <p class="text-xs text-slate-400">${manga.genre}</p>
-                        </div>
-                    `;
-                    li.onclick = () => {
-                        displayManga(manga);
-                        suggestionBox.classList.add('hidden');
-                    };
-                    suggestionList.appendChild(li);
-                });
-            } else {
-                suggestionBox.classList.add('hidden');
-            }
-        } else {
-            suggestionBox.classList.add('hidden');
-        }
-    });
-
-    function displayManga(manga) {
-        mangaDisplay.innerHTML = `
-            <div class="bg-slate-800 p-4 rounded-xl flex gap-4 border border-slate-700">
-                <img src="${manga.cover_url}" class="w-32 h-44 object-cover rounded-lg shadow-lg">
-                <div>
-                    <h2 class="text-2xl font-bold text-blue-400">${manga.title}</h2>
-                    <span class="inline-block mt-2 bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">${manga.genre}</span>
-                </div>
-            </div>
-        `;
-    }
-</script>
-
-        // 1. Supabase Configuration
+        // ၁။ Supabase ချိတ်ဆက်မှု Configuration
         const supabaseUrl = 'https://wcjpbkmwkivasitudwcxn.supabase.co';
         const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjanBia213a2l2YXNpdWR3Y3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTA4NzUsImV4cCI6MjA5MjY4Njg3NX0.b7_4x_E7PwO46MYvjUdbUQUHrQBf9bTBw2IOzkPq0Tc';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         const searchInput = document.getElementById('searchInput');
         const suggestionBox = document.getElementById('suggestionBox');
         const suggestionList = document.getElementById('suggestionList');
         const mangaDisplay = document.getElementById('mangaDisplay');
 
-        // 2. Function to fetch data from Supabase
-        async function fetchManga(query) {
-            const { data, error } = await supabase
+        // ၂။ Database ချိတ်ဆက်မှုကို အရင်ဆုံး စစ်ဆေးမယ်
+        async function checkConnection() {
+            const { data, error } = await supabaseClient.from('manga').select('*').limit(1);
+            if (error) {
+                console.error("Connection Error:", error.message);
+            } else {
+                console.log("Supabase Connected Successfully!");
+            }
+        }
+        checkConnection();
+
+        // ၃။ ရှာဖွေရေး Function
+        async function searchManga(query) {
+            const { data, error } = await supabaseClient
                 .from('manga')
                 .select('*')
-                .ilike('title', `%${query}%`); // Search logic
+                .ilike('title', `%${query}%`);
 
-            if (error) {
-                console.error('Error:', error);
-                return [];
-            }
+            if (error) return [];
             return data;
         }
 
-        // 3. Search Event Listener
+        // ၄။ Input ရိုက်တဲ့အခါ အလုပ်လုပ်ပုံ
         searchInput.addEventListener('input', async (e) => {
             const value = e.target.value.trim();
             suggestionList.innerHTML = '';
 
             if (value.length > 0) {
-                const results = await fetchManga(value);
-
+                const results = await searchManga(value);
                 if (results.length > 0) {
                     suggestionBox.classList.remove('hidden');
                     results.forEach(manga => {
                         const li = document.createElement('li');
-                        li.className = "px-4 py-3 hover:bg-slate-700 cursor-pointer flex items-center gap-3 border-b border-slate-700 last:border-0";
+                        li.className = "px-4 py-3 hover:bg-slate-700 cursor-pointer flex items-center gap-4 border-b border-slate-700/50 last:border-0";
                         li.innerHTML = `
-                            <img src="${manga.cover_url}" class="w-10 h-12 object-cover rounded">
+                            <img src="${manga.cover_url}" class="w-10 h-14 object-cover rounded shadow-md">
                             <div>
-                                <p class="font-bold">${manga.title}</p>
+                                <p class="font-bold text-blue-300">${manga.title}</p>
                                 <p class="text-xs text-slate-400">${manga.genre}</p>
                             </div>
                         `;
-                        li.onclick = () => displayManga(manga);
+                        li.onclick = () => {
+                            showMangaDetail(manga);
+                            suggestionBox.classList.add('hidden');
+                            searchInput.value = manga.title;
+                        };
                         suggestionList.appendChild(li);
                     });
                 } else {
@@ -164,35 +98,32 @@
             }
         });
 
-        // 4. Function to display selected Manga
-        function displayManga(manga) {
-            suggestionBox.classList.add('hidden');
-            searchInput.value = manga.title;
-            
+        // ၅။ ရွေးလိုက်တဲ့ Manga ကို Card ပုံစံနဲ့ ပြပေးတဲ့ Function
+        function showMangaDetail(manga) {
             mangaDisplay.innerHTML = `
-                <div class="bg-slate-800 p-4 rounded-xl flex gap-4 border border-slate-700 animate-pulse-once">
-                    <img src="${manga.cover_url}" class="w-32 h-44 object-cover rounded-lg shadow-lg">
-                    <div>
-                        <h2 class="text-2xl font-bold text-blue-400">${manga.title}</h2>
-                        <span class="inline-block mt-2 bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">${manga.genre}</span>
-                        <p class="mt-4 text-slate-300 text-sm">This manga is now connected to your Supabase database!</p>
+                <div class="bg-slate-800/80 p-6 rounded-3xl border border-blue-500/30 flex flex-col md:flex-row gap-6 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
+                    <img src="${manga.cover_url}" class="w-full md:w-48 h-72 object-cover rounded-2xl shadow-2xl">
+                    <div class="flex flex-col justify-center">
+                        <span class="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">${manga.genre}</span>
+                        <h2 class="text-3xl font-black text-white mb-4">${manga.title}</h2>
+                        <p class="text-slate-400 leading-relaxed">
+                            Database ထဲကနေ အချက်အလက်တွေကို အောင်မြင်စွာ ဆွဲထုတ်နိုင်ခဲ့ပါပြီ။ 
+                            ဒီ Manga ရဲ့ အသေးစိတ်ကို ဆက်လက်ပြင်ဆင်နိုင်ပါတယ်။
+                        </p>
+                        <button class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors w-max">
+                            Read Now
+                        </button>
                     </div>
                 </div>
             `;
         }
 
-        // Close suggestions when clicking outside
+        // နေရာလွတ်ကို နှိပ်ရင် Suggestion Box ပိတ်ဖို့
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target)) suggestionBox.classList.add('hidden');
+            if (!searchInput.contains(e.target) && !suggestionBox.contains(e.target)) {
+                suggestionBox.classList.add('hidden');
+            }
         });
     </script>
-
-    <style>
-        @keyframes pulse-once {
-            0% { opacity: 0.5; transform: scale(0.98); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        .animate-pulse-once { animation: pulse-once 0.3s ease-out; }
-    </style>
 </body>
 </html>
