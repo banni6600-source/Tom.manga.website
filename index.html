@@ -1,221 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TOM MANGA ULTRA+</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaVerse - Your Digital Manga Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-background text-foreground">
+    <!-- Header Navigation -->
+    <header class="bg-card shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl font-bold text-primary">MangaVerse</div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#" class="text-foreground hover:text-primary transition">Home</a>
+                    <a href="#" class="text-foreground hover:text-primary transition">Manga List</a>
+                    <a href="#" class="text-foreground hover:text-primary transition">Downloads</a>
+                </div>
+                <button class="md:hidden text-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+    </header>
 
-<body class="bg-black text-white">
+    <!-- Hero Section -->
+    <section class="bg-secondary py-16">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl md:text-5xl font-bold text-center mb-6">Discover Amazing Manga</h1>
+            <p class="text-accent text-center max-w-2xl mx-auto">Your one-stop destination for reading and downloading your favorite manga series.</p>
+        </div>
+    </section>
 
-<!-- HEADER -->
-<div class="flex justify-between p-4 bg-zinc-900">
-<h1 class="text-xl font-bold">🔥 TOM MANGA</h1>
-<div>
-<span id="coin">💰 0</span>
-<button onclick="logout()" class="ml-3 bg-red-500 px-2">Logout</button>
-</div>
-</div>
+    <!-- Latest Releases -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-8">Latest Releases</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Manga Card 1 -->
+                <div class="bg-card rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition">
+                    <img src="https://images.unsplash.com/photo-1594897030264-ab7d87efc473" alt="Manga Cover" class="w-full h-56 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">Dragon Quest</h3>
+                        <p class="text-accent text-sm mb-4">Fantasy, Action</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-primary text-primary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Read</button>
+                            <button class="bg-secondary text-secondary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Download</button>
+                        </div>
+                    </div>
+                </div>
 
-<!-- AUTH -->
-<div id="authBox" class="text-center mt-10">
-<input id="username" placeholder="Username" class="p-2 text-black"><br><br>
-<input id="password" type="password" placeholder="Password" class="p-2 text-black"><br><br>
-<button onclick="register()" class="bg-green-500 px-4 py-2">Register</button>
-<button onclick="login()" class="bg-blue-500 px-4 py-2">Login</button>
-</div>
+                <!-- Manga Card 2 -->
+                <div class="bg-card rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition">
+                    <img src="https://images.unsplash.com/photo-1613376023733-0a73315d9b06" alt="Manga Cover" class="w-full h-56 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">Ninja Legacy</h3>
+                        <p class="text-accent text-sm mb-4">Action, Adventure</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-primary text-primary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Read</button>
+                            <button class="bg-secondary text-secondary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Download</button>
+                        </div>
+                    </div>
+                </div>
 
-<!-- APP -->
-<div id="app" class="hidden p-4">
+                <!-- Manga Card 3 -->
+                <div class="bg-card rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition">
+                    <img src="https://images.unsplash.com/photo-1608889825205-eebdb9fc5806" alt="Manga Cover" class="w-full h-56 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">Spirit Blade</h3>
+                        <p class="text-accent text-sm mb-4">Fantasy, Romance</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-primary text-primary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Read</button>
+                            <button class="bg-secondary text-secondary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Download</button>
+                        </div>
+                    </div>
+                </div>
 
-<div class="flex gap-2 mb-4">
-<button onclick="showProfile()" class="bg-blue-500 px-2">Profile</button>
-<button onclick="showFavorites()" class="bg-pink-500 px-2">Favorites</button>
-<button onclick="addManga()" class="bg-red-500 px-2">Add</button>
-</div>
+                <!-- Manga Card 4 -->
+                <div class="bg-card rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition">
+                    <img src="https://images.unsplash.com/photo-1612436395449-08860dacc53e" alt="Manga Cover" class="w-full h-56 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">Mystic Academy</h3>
+                        <p class="text-accent text-sm mb-4">School, Supernatural</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-primary text-primary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Read</button>
+                            <button class="bg-secondary text-secondary-foreground px-4 py-2 rounded text-sm hover:bg-opacity-90">Download</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<div id="profileBox" class="hidden border p-3 mb-3"></div>
-<div id="favBox" class="hidden border p-3 mb-3"></div>
-
-<input id="search" placeholder="Search..." oninput="searchManga()" class="p-2 text-black w-full mb-3">
-
-<div id="mangaList" class="grid grid-cols-2 gap-3"></div>
-
-</div>
-
-<!-- READER -->
-<div id="reader" class="hidden fixed inset-0 bg-black overflow-y-auto z-50">
-<button onclick="closeReader()" class="p-3 bg-red-500">Close</button>
-<div id="readerContent"></div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const app = initializeApp({
- apiKey:"AIzaSyDhb5...",
- authDomain:"tommangasite.firebaseapp.com",
- projectId:"tommangasite"
-});
-
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentUser,userData,allManga=[];
-
-// AUTH
-window.register=async()=>{
- let u=username.value,p=password.value;
- let r=await createUserWithEmailAndPassword(auth,u+"@app.com",p);
- await setDoc(doc(db,"users",r.user.uid),{
-  username:u,coin:100,role:"member",favorites:{},purchased:{},lastRead:null
- });
-};
-
-window.login=async()=>{
- let u=username.value,p=password.value;
- await signInWithEmailAndPassword(auth,u+"@app.com",p);
-};
-
-window.logout=async()=>{await signOut(auth);location.reload();};
-
-onAuthStateChanged(auth,async u=>{
- if(u){
-  currentUser=u;
-  authBox.classList.add("hidden");
-  app.classList.remove("hidden");
-
-  let ref=doc(db,"users",u.uid);
-  let snap=await getDoc(ref);
-  userData=snap.data();
-
-  coin.innerText="💰 "+userData.coin;
-  loadManga();
- }
-});
-
-// LOAD
-async function loadManga(){
- let snap=await getDocs(collection(db,"manga"));
- allManga=[];
- snap.forEach(d=>{
-  let m=d.data();m.id=d.id;
-  allManga.push(m);
- });
- render(allManga);
-}
-
-// RENDER
-function render(list){
- mangaList.innerHTML="";
- list.forEach(m=>{
-  mangaList.innerHTML+=`
-  <div class="border p-2">
-    <img src="${m.thumb||''}" class="w-full h-40 object-cover">
-    <h3>${m.title}</h3>
-    <p class="text-xs">${m.desc||''}</p>
-
-    <button onclick="openManga('${m.id}')" class="bg-yellow-500 px-2 mt-2">Open</button>
-    <button onclick="fav('${m.id}')" class="bg-pink-500 px-2 mt-2">❤️</button>
-  </div>`;
- });
-}
-
-// SEARCH
-window.searchManga=()=>{
- let q=search.value.toLowerCase();
- render(allManga.filter(m=>m.title.toLowerCase().includes(q)));
-};
-
-// FAVORITE
-window.fav=async(id)=>{
- let f=userData.favorites||{};
- f[id]?delete f[id]:f[id]=true;
- await setDoc(doc(db,"users",currentUser.uid),{...userData,favorites:f});
- userData.favorites=f;
-};
-
-// SHOW FAVORITES
-window.showFavorites=()=>{
- favBox.classList.toggle("hidden");
- let list=allManga.filter(m=>userData.favorites?.[m.id]);
- favBox.innerHTML=list.map(m=>`<p>${m.title}</p>`).join("");
-};
-
-// PROFILE
-window.showProfile=()=>{
- profileBox.classList.toggle("hidden");
- profileBox.innerHTML=`
- <p>User: ${userData.username}</p>
- <p>Coin: ${userData.coin}</p>
- `;
-};
-
-// ADD MANGA
-window.addManga=async()=>{
- if(userData.role!=="owner") return alert("Admin only");
-
- let t=prompt("Title");
- let thumb=prompt("Thumbnail URL");
- let desc=prompt("Description");
-
- let ref=await addDoc(collection(db,"manga"),{
-  title:t,thumb,desc
- });
-
- // add sample chapter
- await addDoc(collection(db,"manga",ref.id,"chapters"),{
-  title:"Chapter 1",
-  pages:[
-   "https://via.placeholder.com/600x800",
-   "https://via.placeholder.com/600x800"
-  ],
-  price:5
- });
-
- loadManga();
-};
-
-// OPEN MANGA
-window.openManga=async(id)=>{
- let snap=await getDocs(collection(db,"manga",id,"chapters"));
- let html="<h2>Chapters</h2>";
-
- snap.forEach(c=>{
-  let d=c.data();
-  html+=`<button onclick="read('${id}','${c.id}',${d.price})">${d.title} (${d.price})</button><br>`;
- });
-
- profileBox.innerHTML=html;
- profileBox.classList.remove("hidden");
-};
-
-// READ
-window.read=async(mid,cid,price)=>{
- let bought=userData.purchased||{};
- if(!bought[cid]){
-  if(userData.coin<price) return alert("No coin");
-  userData.coin-=price;
-  bought[cid]=true;
-  await setDoc(doc(db,"users",currentUser.uid),{...userData,purchased:bought});
- }
-
- let snap=await getDoc(doc(db,"manga",mid,"chapters",cid));
- let pages=snap.data().pages;
-
- readerContent.innerHTML=pages.map(p=>`<img src="${p}" class="w-full">`).join("");
- reader.classList.remove("hidden");
-
- userData.lastRead={mid,cid};
- await setDoc(doc(db,"users",currentUser.uid),userData);
-};
-
-// CLOSE READER
-window.closeReader=()=>{reader.classList.add("hidden");};
-
-</script>
+    <!-- Footer -->
+    <footer class="bg-secondary mt-12 py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center text-accent">
+                <p>&copy; 2024 MangaVerse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
