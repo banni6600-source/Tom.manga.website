@@ -29,6 +29,86 @@
         </div>
 
     <script>
+    // ၁။ Supabase ချိတ်ဆက်မှု (URL နဲ့ Key ကို သေချာစစ်ပါ)
+    const supabaseUrl = 'https://wcjpbkmwkivasitudwcxn.supabase.co';
+    const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjanBia213a2l2YXNpdWR3Y3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTA4NzUsImV4cCI6MjA5MjY4Njg3NX0.b7_4x_E7PwO46MYvjUdbUQUHrQBf9bTBw2IOzkPq0Tc';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const searchInput = document.getElementById('searchInput');
+    const suggestionBox = document.getElementById('suggestionBox');
+    const suggestionList = document.getElementById('suggestionList');
+    const mangaDisplay = document.getElementById('mangaDisplay');
+
+    // ချိတ်ဆက်မှု ရှိ၊ မရှိ အရင်စမ်းသပ်မည့် Function
+    async function checkDatabase() {
+        const { data, error } = await supabase.from('manga').select('*');
+        if (error) {
+            console.error("Database Error:", error.message);
+            alert("Database ချိတ်လို့မရသေးပါ- " + error.message);
+        } else {
+            console.log("Connected! Data count:", data.length);
+            // ချိတ်ဆက်မှု အောင်မြင်ရင် Console မှာ Data count ပေါ်လာပါမယ်
+        }
+    }
+    checkDatabase(); // Website စဖွင့်တာနဲ့ စစ်ဆေးမယ်
+
+    // ၂။ ရှာဖွေရေး Function
+    async function fetchManga(query) {
+        const { data, error } = await supabase
+            .from('manga')
+            .select('*')
+            .ilike('title', `%${query}%`);
+
+        if (error) return [];
+        return data;
+    }
+
+    // ၃။ Search Event
+    searchInput.addEventListener('input', async (e) => {
+        const value = e.target.value.trim();
+        suggestionList.innerHTML = '';
+
+        if (value.length > 0) {
+            const results = await fetchManga(value);
+            if (results.length > 0) {
+                suggestionBox.classList.remove('hidden');
+                results.forEach(manga => {
+                    const li = document.createElement('li');
+                    li.className = "px-4 py-3 hover:bg-slate-700 cursor-pointer flex items-center gap-3 border-b border-slate-700 last:border-0";
+                    li.innerHTML = `
+                        <img src="${manga.cover_url}" class="w-10 h-12 object-cover rounded">
+                        <div>
+                            <p class="font-bold text-white">${manga.title}</p>
+                            <p class="text-xs text-slate-400">${manga.genre}</p>
+                        </div>
+                    `;
+                    li.onclick = () => {
+                        displayManga(manga);
+                        suggestionBox.classList.add('hidden');
+                    };
+                    suggestionList.appendChild(li);
+                });
+            } else {
+                suggestionBox.classList.add('hidden');
+            }
+        } else {
+            suggestionBox.classList.add('hidden');
+        }
+    });
+
+    function displayManga(manga) {
+        mangaDisplay.innerHTML = `
+            <div class="bg-slate-800 p-4 rounded-xl flex gap-4 border border-slate-700">
+                <img src="${manga.cover_url}" class="w-32 h-44 object-cover rounded-lg shadow-lg">
+                <div>
+                    <h2 class="text-2xl font-bold text-blue-400">${manga.title}</h2>
+                    <span class="inline-block mt-2 bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">${manga.genre}</span>
+                </div>
+            </div>
+        `;
+    }
+</script>
+
         // 1. Supabase Configuration
         const supabaseUrl = 'https://wcjpbkmwkivasitudwcxn.supabase.co';
         const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjanBia213a2l2YXNpdWR3Y3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTA4NzUsImV4cCI6MjA5MjY4Njg3NX0.b7_4x_E7PwO46MYvjUdbUQUHrQBf9bTBw2IOzkPq0Tc';
