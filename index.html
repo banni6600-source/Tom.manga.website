@@ -3,111 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MangaVerse - Digital Library</title>
+    <title>Manga Search - Supabase</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#f43f5e',
-                        background: '#020617',
-                        card: '#0f172a',
-                        foreground: '#f8fafc',
-                        accent: '#94a3b8',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-background text-foreground antialiased">
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center p-10">
 
-    <header class="bg-card/90 backdrop-blur-md sticky top-0 z-50 border-b border-white/5 py-3">
-        <nav class="container mx-auto px-4 flex items-center justify-between gap-4">
-            
-            <div class="text-2xl font-black text-primary tracking-tighter">MangaVerse</div>
+    <h1 class="text-3xl font-bold mb-8 text-blue-400">Manga Catalog</h1>
 
-            <div class="relative flex-1 max-w-md mx-4">
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-accent">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </span>
-                    <input type="text" id="searchInput"
-                           class="w-full bg-slate-800/50 border border-slate-700 text-sm rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-inner" 
-                           placeholder="Search titles, authors..." autocomplete="off">
-                </div>
+    <div class="relative w-full max-w-md">
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search manga (e.g. Solo Farming)..." 
+            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition-all"
+        >
 
-                <div id="suggestionBox" class="hidden absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-[60]">
-                    <ul id="suggestionList" class="max-h-60 overflow-y-auto custom-scroll">
-                        </ul>
-                </div>
-            </div>
+        <div id="suggestionBox" class="hidden absolute w-full mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-50">
+            <ul id="suggestionList">
+                </ul>
+        </div>
+    </div>
 
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#" class="text-sm font-medium hover:text-primary transition">Browse</a>
-                <button class="bg-primary hover:bg-rose-600 px-6 py-2 rounded-lg font-bold text-sm transition shadow-lg shadow-primary/20">
-                    Sign In
-                </button>
-            </div>
-        </nav>
-    </header>
-
-    <main class="container mx-auto px-4 py-20">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-6xl font-black mb-4">Read Your Favorite <span class="text-primary">Manga</span></h1>
-            <p class="text-accent text-lg max-w-xl mx-auto">Explore thousands of titles. Start searching above to find your next adventure.</p>
+    <div id="mangaDisplay" class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="mangaGrid">
-            </div>
-    </main>
-
     <script>
-        // Database Mockup
-        const mangaData = [
-            { title: "Dragon Ball Super", genre: "Action" },
-            { title: "Dragon Quest", genre: "Adventure" },
-            { title: "Ninja Legacy", genre: "Action" },
-            { title: "Naruto: Shippuden", genre: "Ninja" },
-            { title: "Spirit Blade", genre: "Fantasy" },
-            { title: "One Piece", genre: "Adventure" },
-            { title: "Solo Leveling", genre: "Action" },
-            { title: "Mystic Academy", genre: "Supernatural" }
-        ];
+        // 1. Supabase Configuration
+        const supabaseUrl = 'https://wcjpbkmwkivasitudwcxn.supabase.co';
+        const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjanBia213a2l2YXNpdWR3Y3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTA4NzUsImV4cCI6MjA5MjY4Njg3NX0.b7_4x_E7PwO46MYvjUdbUQUHrQBf9bTBw2IOzkPq0Tc';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         const searchInput = document.getElementById('searchInput');
         const suggestionBox = document.getElementById('suggestionBox');
         const suggestionList = document.getElementById('suggestionList');
+        const mangaDisplay = document.getElementById('mangaDisplay');
 
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
+        // 2. Function to fetch data from Supabase
+        async function fetchManga(query) {
+            const { data, error } = await supabase
+                .from('manga')
+                .select('*')
+                .ilike('title', `%${query}%`); // Search logic
+
+            if (error) {
+                console.error('Error:', error);
+                return [];
+            }
+            return data;
+        }
+
+        // 3. Search Event Listener
+        searchInput.addEventListener('input', async (e) => {
+            const value = e.target.value.trim();
             suggestionList.innerHTML = '';
 
-            if (query.length > 0) {
-                const matches = mangaData.filter(manga => 
-                    manga.title.toLowerCase().includes(query)
-                );
+            if (value.length > 0) {
+                const results = await fetchManga(value);
 
-                if (matches.length > 0) {
+                if (results.length > 0) {
                     suggestionBox.classList.remove('hidden');
-                    matches.forEach(manga => {
+                    results.forEach(manga => {
                         const li = document.createElement('li');
-                        li.className = "px-4 py-3 hover:bg-slate-800 cursor-pointer border-b border-white/5 last:border-0 flex justify-between items-center transition";
+                        li.className = "px-4 py-3 hover:bg-slate-700 cursor-pointer flex items-center gap-3 border-b border-slate-700 last:border-0";
                         li.innerHTML = `
-                            <span class="font-medium text-slate-200">${manga.title}</span>
-                            <span class="text-[10px] bg-slate-700 px-2 py-0.5 rounded text-accent font-bold uppercase tracking-tighter">${manga.genre}</span>
+                            <img src="${manga.cover_url}" class="w-10 h-12 object-cover rounded">
+                            <div>
+                                <p class="font-bold">${manga.title}</p>
+                                <p class="text-xs text-slate-400">${manga.genre}</p>
+                            </div>
                         `;
-                        li.onclick = () => {
-                            searchInput.value = manga.title;
-                            suggestionBox.classList.add('hidden');
-                        };
+                        li.onclick = () => displayManga(manga);
                         suggestionList.appendChild(li);
                     });
                 } else {
@@ -118,12 +84,35 @@
             }
         });
 
-        // Close dropdown when clicking outside
+        // 4. Function to display selected Manga
+        function displayManga(manga) {
+            suggestionBox.classList.add('hidden');
+            searchInput.value = manga.title;
+            
+            mangaDisplay.innerHTML = `
+                <div class="bg-slate-800 p-4 rounded-xl flex gap-4 border border-slate-700 animate-pulse-once">
+                    <img src="${manga.cover_url}" class="w-32 h-44 object-cover rounded-lg shadow-lg">
+                    <div>
+                        <h2 class="text-2xl font-bold text-blue-400">${manga.title}</h2>
+                        <span class="inline-block mt-2 bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">${manga.genre}</span>
+                        <p class="mt-4 text-slate-300 text-sm">This manga is now connected to your Supabase database!</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Close suggestions when clicking outside
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !suggestionBox.contains(e.target)) {
-                suggestionBox.classList.add('hidden');
-            }
+            if (!searchInput.contains(e.target)) suggestionBox.classList.add('hidden');
         });
     </script>
+
+    <style>
+        @keyframes pulse-once {
+            0% { opacity: 0.5; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-pulse-once { animation: pulse-once 0.3s ease-out; }
+    </style>
 </body>
 </html>
